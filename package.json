@@ -1,0 +1,13 @@
+{
+    "name": "brackets-code-folding",
+    "version": "0.0.1",
+    "description": "Brackets extension that provides simple code folding for css, less, json, javascript, xml and html files.",
+    "keywords": ".js, .json, code folding, code collapsing",
+    "categories": ["formatting", "general", "editing", "visual"],
+    "engines": ">=23",
+    "contributors": [
+        {"name": "Patrick Oladimeji", "email": "thehogfather@dustygem.co.uk", "url": "https://github.com/thehogfather"},
+        {"name": "Daniel Glazman", "email": "daniel@glazman.org"}
+    ],
+    "license": "MIT"
+}

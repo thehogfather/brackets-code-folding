@@ -1,14 +1,15 @@
+// the tagRangeFinder function is
+//   Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
+// released under the MIT license (../../LICENSE) like the rest of CodeMirror
+
 /**
  * 
- * @author Patrick Oladimeji
+ * @author Daniel Glazman (modified for Brackets by Patrick Oladimeji <thehogfather@dustygem.co.uk>)
  * @date 4/18/13 15:01:56 PM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
 
-// the tagRangeFinder function is
-//   Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
-// released under the MIT license (../../LICENSE) like the rest of CodeMirror
 define(function (require, exports, module) {
     "use strict";
     var startTagRegex = /^<\w+>/;
@@ -121,8 +122,9 @@ define(function (require, exports, module) {
     
      module.exports = {
         rangeFinder: rangeFinder,
-        canFold: function (line) {
-             return startTagRegex.test(line);
+        canFold: function (cm, lineNum) {
+            var lineText = cm.getLine(lineNum);
+            return startTagRegex.test(lineText);
         }
      };
 });

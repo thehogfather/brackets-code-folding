@@ -1,6 +1,10 @@
+// the tagRangeFinder function is
+//   Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
+// released under the MIT license (../../LICENSE) like the rest of CodeMirror
+
 /**
  * Range Finder for javascript functions to support code folding
- * @author Patrick Oladimeji
+ * @author Daniel Glazman (modified for Brackets by Patrick Oladimeji <thehogfather@dustygem.co.uk>)
  * @date 4/14/13 18:29:41 PM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
@@ -8,6 +12,7 @@
 define(function (require, exports, module) {
     "use strict";
     
+    var _commentRegex = /^(comment|string)/;
     function rangeFinder(cm, start) {
         var line = start.line, lineText = cm.getLine(line);
         var at = lineText.length, startChar, tokenType;
@@ -17,7 +22,7 @@ define(function (require, exports, module) {
                 break;
             }
             tokenType = cm.getTokenAt(CodeMirror.Pos(line, found + 1)).type;
-            if (!/^(comment|string)/.test(tokenType)) { startChar = found; break; }
+            if (!_commentRegex.test(tokenType)) { startChar = found; break; }
             at = found - 1;
         }
         if (startChar === null || lineText.lastIndexOf("}") > startChar) {
@@ -60,9 +65,11 @@ outer:  for (i = line + 1; i < lastLine; ++i) {
     
     module.exports = {
         rangeFinder: rangeFinder,
-        canFold:    function (line) {
-            var openBraceIndex = line.lastIndexOf("{"), closeBraceIndex = line.lastIndexOf("}");
-            return openBraceIndex > closeBraceIndex;
+        canFold:    function (cm, lineNum) {
+            var lineText = cm.getLine(lineNum);
+            var openBraceIndex = lineText.lastIndexOf("{"), closeBraceIndex = lineText.lastIndexOf("}");
+            var tokenType = cm.getTokenAt(CodeMirror.Pos(lineNum, openBraceIndex + 1)).type;
+            return !_commentRegex.test(tokenType) && openBraceIndex > closeBraceIndex;
         }
     };
 });

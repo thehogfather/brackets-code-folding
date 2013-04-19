@@ -1,3 +1,25 @@
+/*
+* Copyright (c) 2013 Patrick Oladimeji. All rights reserved.
+*
+* Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files (the "Software"),
+* to deal in the Software without restriction, including without limitation
+* the rights to use, copy, modify, merge, publish, distribute, sublicense,
+* and/or sell copies of the Software, and to permit persons to whom the
+* Software is furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+* DEALINGS IN THE SOFTWARE.
+*
+*/
 /**
  * main file for code folding in brackets based on Code mirror's code folding addon feature
  * @author Patrick Oladimeji
@@ -15,14 +37,16 @@ define(function (require, exports, module) {
         KeyEvent                = brackets.getModule("utils/KeyEvent"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
         braceRangeFinder        = require("braceRangeFinder"),
-        tagRangeFinder          = require("tagRangeFinder");
-    
-    var foldCode                = "javascript.code.folding",
-        enabled                 = true;
-    var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
-    var _expandedChar = "\u25bc", _collapsedChar = "\u25b6", _foldMarker = "\u2194",
-        _braceCollapsibleExtensions = [".js", ".css", ".less"],
+        tagRangeFinder          = require("tagRangeFinder"),
+        CODE_FOLD_EXT           = "javascript.code.folding",
+        _extensionEnabled       = false,
+        _expandedChar           = "\u25bc",
+        _collapsedChar          = "\u25b6",
+        _foldMarker             = "\u2194",
+        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"];
+    
+    var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     
     function _createMarker(html, className) {
         var marker = document.createElement("div");
@@ -42,9 +66,19 @@ define(function (require, exports, module) {
     function _getCollapsibleLines(cm, rangeFinder) {
         var viewport = cm.getViewport(), lines = [], i;
         for (i = viewport.from; i < viewport.to; i++) {
-            var canFold = rangeFinder.canFold(cm.getLine(i));
+            //find out if the line is folded so no need to loop through
+            var marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)), skip = 0, j;
+            for (j = 0; j < marks.length; j++) {
+                if (marks[j].__isFold) {
+                    skip = marks[j].lines.length;
+                    break;
+                }
+            }
+                
+            var canFold = rangeFinder.canFold(cm, i);
             if (canFold) {
                 lines.push(i);
+                i += skip;
             }
         }
         return lines;
@@ -74,7 +108,9 @@ define(function (require, exports, module) {
         }
     }
     
-    //define new fold function 
+    //define new fold function for code mirror
+    //  Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
+    // released under the MIT license (../../LICENSE) like the rest of CodeMirror
     CodeMirror.newFoldFunction = function (rangeFinder, widget) {
         if (!widget) {
             widget = _foldMarker;
@@ -125,11 +161,23 @@ define(function (require, exports, module) {
      * goes through the visible part of the document and decorates the line numbers with icons for
      * colapsing and expanding code sections
      */
-    function _decorateGutters(cm) {
+    function _decorateGutters(editor) {
+        var cm = editor._codeMirror;
         var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
         collapsibleLines.forEach(function (lineNum) {
             _toggleLineMarker(cm, lineNum);
         });
+    }
+    
+    function _handleScroll(event, editor) {
+        _decorateGutters(editor);
+    }
+    
+    function _handleDocumentChange(event, document, changeList) {
+        var editor = document._masterEditor;
+        if (editor) {
+            _decorateGutters(editor);
+        }
     }
     
     function _undecorateGutters(cm) {
@@ -138,17 +186,14 @@ define(function (require, exports, module) {
  
     function _handleGutterClick(cm, n) {
         var editor = EditorManager.getCurrentFullEditor();
-        cm.off("scroll", _decorateGutters);
         foldFunc(cm, n);
-        _toggleLineMarker(cm, n);
-        cm.on("scroll", _decorateGutters);
+        _decorateGutters(editor);
     }
     
     function _registerHandlers(editor, fileType) {
         var cm = editor._codeMirror, doc = editor.document;
-        $(doc).on("change", _decorateGutters);
+        $(doc).on("change", _handleDocumentChange);
         if (cm) {
-            cm.on("scroll", _decorateGutters);
             //create the appropriate folding function based on the file that was opened
             var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
             if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
@@ -156,27 +201,32 @@ define(function (require, exports, module) {
             } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
                 _activeRangeFinder = tagRangeFinder;
             }
-            foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder);
-            cm.on("gutterClick", _handleGutterClick);
+            //add listeners if a rangeFinder was set
+            if (_activeRangeFinder) {
+                foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder);
+                cm.on("gutterClick", _handleGutterClick);
+                _decorateGutters(editor);
+                $(editor).on("scroll", _handleScroll);
+            }
+            
         }
-        _decorateGutters(cm);
     }
     
     function _deregisterHandlers(editor) {
         var cm = editor._codeMirror;
-        $(editor.document).off("change", _decorateGutters);
+        $(editor.document).off("change", _handleDocumentChange);
         if (cm) {
+            $(editor).off("scroll", _handleScroll);
             cm.off("gutterClick", _handleGutterClick);
-            cm.off("scroll", _decorateGutters);
         }
         _undecorateGutters(cm);
     }
     
     function _toggleExtension() {
         var editor = EditorManager.getCurrentFullEditor();
-        enabled = !enabled;
-        CommandManager.get(foldCode).setChecked(enabled);
-        if (enabled) {
+        _extensionEnabled = !_extensionEnabled;
+        CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
+        if (_extensionEnabled) {
             _registerHandlers(editor);
         } else {
             _deregisterHandlers(editor);
@@ -184,7 +234,8 @@ define(function (require, exports, module) {
     }
    
     $(EditorManager).on("activeEditorChange", function (event, current, previous) {
-        if (enabled) {
+        if (_extensionEnabled) {
+            _activeRangeFinder = undefined;
             if (previous) {
                 _deregisterHandlers(previous);
             }
@@ -197,7 +248,7 @@ define(function (require, exports, module) {
     //Load stylesheet
     ExtensionUtils.loadStyleSheet(module, "main.less");
     
-    CommandManager.register("Enable Code Folding", foldCode, _toggleExtension);
-    Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(foldCode);
-    CommandManager.get(foldCode).setChecked(enabled);
+    CommandManager.register("Enable Code Folding", CODE_FOLD_EXT, _toggleExtension);
+    Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLD_EXT);
+    CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
 });
