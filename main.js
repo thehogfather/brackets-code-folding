@@ -48,19 +48,25 @@ define(function (require, exports, module) {
     
     var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     
-    function _createMarker(html, className) {
+    function _createMarker(lineNum, mark, lineNumClassName, markClassName) {
         var marker = document.createElement("div");
-        marker.innerHTML = html;
-        marker.className = className;
+        var iconSpan = document.createElement("span");
+        iconSpan.className = markClassName;
+        iconSpan.innerHTML = mark;
+        var lineNumSpan = document.createElement("span");
+        lineNumSpan.innerHTML = lineNum;
+        marker.appendChild(lineNumSpan);
+        marker.appendChild(iconSpan);
+        marker.className = lineNumClassName;
         return marker;
     }
     
     function _createCollapsedMarker(lineNum) {
-        return _createMarker(lineNum + _collapsedChar, "cm-thehogfather-codefolding-collapsed CodeMirror-linenumber");
+        return _createMarker(lineNum, _collapsedChar, "CodeMirror-linenumber", "cm-thehogfather-codefolding-collapsed");
     }
     
     function _createExpandedMarker(lineNum) {
-        return _createMarker(lineNum + _expandedChar, "cm-thehogfather-codefolding-expanded CodeMirror-linenumber");
+        return _createMarker(lineNum, _expandedChar, "CodeMirror-linenumber", "cm-thehogfather-codefolding-expanded");
     }
     
     function _getCollapsibleLines(cm, rangeFinder) {
@@ -176,6 +182,7 @@ define(function (require, exports, module) {
     function _handleDocumentChange(event, document, changeList) {
         var editor = document._masterEditor;
         if (editor) {
+            editor.refreshAll();
             _decorateGutters(editor);
         }
     }
