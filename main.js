@@ -170,8 +170,8 @@ define(function (require, exports, module) {
     function _decorateGutters(editor) {
         var cm = editor._codeMirror;
         var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
-        collapsibleLines.forEach(function (lineNum) {
-            _toggleLineMarker(cm, lineNum);
+        collapsibleLines.forEach(function (line) {
+            _toggleLineMarker(cm, line);
         });
     }
     
