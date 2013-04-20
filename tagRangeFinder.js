@@ -1,130 +1,85 @@
-// the tagRangeFinder function is
-//   Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
-// released under the MIT license (../../LICENSE) like the rest of CodeMirror
-
 /**
- * 
- * @author Daniel Glazman (modified for Brackets by Patrick Oladimeji <thehogfather@dustygem.co.uk>)
- * @date 4/18/13 15:01:56 PM
+ * A range finder based on matching tags using stacks.
+ * @author Patrick Oladimeji
+ * @date 4/19/13 23:03:05 PM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
-
 define(function (require, exports, module) {
     "use strict";
-    var startTagRegex = /^<\w+>/;
-    function rangeFinder(cm, start) {
-        var nameStartChar = "A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD";
-        var nameChar = nameStartChar + "\-\:\.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040";
-        var xmlNAMERegExp = new RegExp("^[" + nameStartChar + "][" + nameChar + "]*");
+    var startTagRegex = /^\s*<(\w+)/, endTagRegex = /\s*<\/(\w+)>\s*$/;
     
-        var lineText = cm.getLine(start.line);
-        var found = false;
-        var tag = null;
-        var pos = start.ch;
-        while (!found) {
-            pos = lineText.indexOf("<", pos);
-            if (-1 === pos) {// no tag on line
-                return;
-            }
-            if (pos + 1 < lineText.length && lineText[pos + 1] === "/") { // closing tag
-                pos++;
-                continue;
-            }
-            // ok we seem to have a start tag
-            if (!lineText.substr(pos + 1).match(xmlNAMERegExp)) { // not a tag name...
-                pos++;
-                continue;
-            }
-            var gtPos = lineText.indexOf(">", pos + 1);
-            if (-1 === gtPos) { // end of start tag not in line
-                var l = start.line + 1;
-                var foundGt = false;
-                var lastLine = cm.lineCount();
-                while (l < lastLine && !foundGt) {
-                    var lt = cm.getLine(l);
-                    gtPos = lt.indexOf(">");
-                    if (-1 !== gtPos) { // found a >
-                        foundGt = true;
-                        var slash = lt.lastIndexOf("/", gtPos);
-                        if (-1 !== slash && slash < gtPos) {
-                            var str = lineText.substr(slash, gtPos - slash + 1);
-                            if (!str.match(/\/\s*\>/)) {// yep, that's the end of empty tag
-                                return;
-                            }
-                        }
-                    }
-                    l++;
-                }
-                found = true;
+    function _processLine(lineText, tagsStack) {
+        var startTagMatches = startTagRegex.exec(lineText), startTag;
+        var endTagMatches = endTagRegex.exec(lineText), endTag;
+      
+        if (startTagMatches && startTagMatches.length > 1) {
+            tagsStack = tagsStack || [];
+            startTag = startTagMatches[1].toLowerCase();
+            tagsStack.push(startTag);
+            
+        }
+        
+        //can we find a close tag on the same line?
+        if (tagsStack && endTagMatches && endTagMatches.length > 1) {
+            endTag = endTagMatches[1].toLowerCase();
+            //pop the stack if this close tag matches the most recent open tag ie the head of the stack
+            if (tagsStack[tagsStack.length - 1] === endTag) {
+                tagsStack.pop();
             } else {
-                var slashPos = lineText.lastIndexOf("/", gtPos);
-                if (-1 === slashPos) { // cannot be empty tag
-                    found = true;
-                    // don't continue
-                } else { // empty tag?
-                    // check if really empty tag
-                    var str = lineText.substr(slashPos, gtPos - slashPos + 1);
-                    if (!str.match( /\/\s*\>/ )) { // finally not empty
-                        found = true;
-                        // don't continue
-                    }
-                }
-            }
-            if (found) {
-                var subLine = lineText.substr(pos + 1);
-                tag = subLine.match(xmlNAMERegExp);
-                if (tag) {
-                    // we have an element name, wooohooo !
-                    tag = tag[0];
-                    // do we have the close tag on same line ???
-                    if (-1 !== lineText.indexOf("</" + tag + ">", pos)) {// yep
-                        found = false;
-                    }
-                    // we don't, so we have a candidate...
+                //this might have been a typo? should we pop it anyway and 
+                //prioritise a close tag to match the most recent start tag?
+                //for now we just pop the stack until we find a match
+                do {
+                    tagsStack.pop();
+                } while (tagsStack.length > 0 && tagsStack[tagsStack.length - 1] !== endTag);
+               
+                if (tagsStack[tagsStack.length - 1] === endTag) {
+                    tagsStack.pop();
                 } else {
-                    found = false;
+                    tagsStack = null;
                 }
-            }
-            if (!found) {
-                pos++;
             }
         }
+        return tagsStack;
+    }
     
-        if (found) {
-            var startTag = "(\\<\\/" + tag + "\\>)|(\\<" + tag + "\\>)|(\\<" + tag + "\\s)|(\\<" + tag + "$)";
-            var startTagRegExp = new RegExp(startTag);
-            var endTag = "</" + tag + ">";
-            var depth = 1;
-            var l = start.line + 1;
-            var lastLine = cm.lineCount();
-            while (l < lastLine) {
-                lineText = cm.getLine(l);
-                var match = lineText.match(startTagRegExp), i;
-                if (match) {
-                    for (i = 0; i < match.length; i++) {
-                        if (match[i] === endTag) {
-                            depth--;
-                        } else {
-                            depth++;
-                        }
-                        if (!depth) {
-                            return {from: CodeMirror.Pos(start.line, gtPos + 1),
-                                      to: CodeMirror.Pos(l, match.index)};
-                        }
-                    }
-                }
-                l++;
-            }
+    function rangeFinder(cm, start) {
+        var lineText, startLineText = cm.getLine(start.line);
+        var stack = _processLine(startLineText);
+        
+        if (!stack || stack.length === 0) { //no match was found on line or tag was closed on line
             return;
+        } else {
+            //keep looking to the end of the file until you find it :S
+            var lineCount = cm.lineCount(), i;
+            
+            for (i = start.line + 1; i < lineCount; i++) {
+                lineText = cm.getLine(i);
+                stack = _processLine(lineText, stack);
+                //if stack is null, then tag has no closing tag if it is empty we found a match
+                if (!stack) {
+                    return;
+                }
+                if (stack.length === 0) {
+                    var startCharIndex = startLineText.lastIndexOf(">"),
+                        endCharIndex    = lineText.lastIndexOf("<");
+                    return {from: CodeMirror.Pos(start.line, startCharIndex + 1),
+                           to: CodeMirror.Pos(i, endCharIndex + 1)};
+                }
+            }
+            
+            return;
+        }
+        
+    }
+    
+    module.exports = {
+        rangeFinder: rangeFinder,
+        canFold: function (cm, lineNum) {
+            var range = rangeFinder(cm, CodeMirror.Pos(lineNum, 1));
+            return range;
         }
     };
     
-     module.exports = {
-        rangeFinder: rangeFinder,
-        canFold: function (cm, lineNum) {
-            var lineText = cm.getLine(lineNum);
-            return startTagRegex.test(lineText);
-        }
-     };
 });

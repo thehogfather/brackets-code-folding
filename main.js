@@ -36,10 +36,11 @@ define(function (require, exports, module) {
         Menus                   = brackets.getModule("command/Menus"),
         KeyEvent                = brackets.getModule("utils/KeyEvent"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
+        AppInit                 = brackets.getModule("utils/AppInit"),
         braceRangeFinder        = require("braceRangeFinder"),
         tagRangeFinder          = require("tagRangeFinder"),
         CODE_FOLD_EXT           = "javascript.code.folding",
-        _extensionEnabled       = false,
+        _extensionEnabled       = true,
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
         _foldMarker             = "\u2194",
@@ -182,7 +183,6 @@ define(function (require, exports, module) {
     function _handleDocumentChange(event, document, changeList) {
         var editor = document._masterEditor;
         if (editor) {
-            editor.refreshAll();
             _decorateGutters(editor);
         }
     }
@@ -199,7 +199,6 @@ define(function (require, exports, module) {
     
     function _registerHandlers(editor, fileType) {
         var cm = editor._codeMirror, doc = editor.document;
-        $(doc).on("change", _handleDocumentChange);
         if (cm) {
             //create the appropriate folding function based on the file that was opened
             var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
@@ -211,11 +210,11 @@ define(function (require, exports, module) {
             //add listeners if a rangeFinder was set
             if (_activeRangeFinder) {
                 foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder);
+                $(doc).on("change", _handleDocumentChange);
                 cm.on("gutterClick", _handleGutterClick);
-                _decorateGutters(editor);
                 $(editor).on("scroll", _handleScroll);
+                _decorateGutters(editor);
             }
-            
         }
     }
     
@@ -225,8 +224,8 @@ define(function (require, exports, module) {
         if (cm) {
             $(editor).off("scroll", _handleScroll);
             cm.off("gutterClick", _handleGutterClick);
+            _undecorateGutters(cm);
         }
-        _undecorateGutters(cm);
     }
     
     function _toggleExtension() {
@@ -258,4 +257,5 @@ define(function (require, exports, module) {
     CommandManager.register("Enable Code Folding", CODE_FOLD_EXT, _toggleExtension);
     Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLD_EXT);
     CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
+    
 });
