@@ -65,7 +65,7 @@ define(function (require, exports, module) {
                     var startCharIndex = startLineText.lastIndexOf(">"),
                         endCharIndex    = lineText.lastIndexOf("<");
                     return {from: CodeMirror.Pos(start.line, startCharIndex + 1),
-                           to: CodeMirror.Pos(i, endCharIndex + 1)};
+                           to: CodeMirror.Pos(i, endCharIndex)};
                 }
             }
             
