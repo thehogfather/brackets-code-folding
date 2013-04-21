@@ -50,24 +50,28 @@ define(function (require, exports, module) {
     var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     
     function _createMarker(lineNum, mark, lineNumClassName, markClassName) {
-        var marker = document.createElement("div");
-        var iconSpan = document.createElement("span");
-        iconSpan.className = markClassName;
-        iconSpan.innerHTML = mark;
+        var marker = document.createElement("div"), iconSpan;
         var lineNumSpan = document.createElement("span");
         lineNumSpan.innerHTML = lineNum;
         marker.appendChild(lineNumSpan);
-        marker.appendChild(iconSpan);
+        if (mark) {
+            iconSpan = document.createElement("span");
+            iconSpan.className = markClassName;
+            iconSpan.innerHTML = mark;
+            marker.appendChild(iconSpan);
+        }
         marker.className = lineNumClassName;
         return marker;
     }
     
     function _createCollapsedMarker(lineNum) {
-        return _createMarker(lineNum, _collapsedChar, "CodeMirror-linenumber", "cm-thehogfather-codefolding-collapsed");
+        return _createMarker(lineNum, _collapsedChar, "CodeMirror-linenumber cm-thehogfather-codefolding",
+                             "cm-thehogfather-codefolding-collapsed");
     }
     
     function _createExpandedMarker(lineNum) {
-        return _createMarker(lineNum, _expandedChar, "CodeMirror-linenumber", "cm-thehogfather-codefolding-expanded");
+        return _createMarker(lineNum, _expandedChar, "CodeMirror-linenumber cm-thehogfather-codefolding",
+                             "cm-thehogfather-codefolding-expanded");
     }
     
     function _getCollapsibleLines(cm, rangeFinder) {
@@ -85,19 +89,21 @@ define(function (require, exports, module) {
             var canFold = rangeFinder.canFold(cm, i);
             if (canFold) {
                 lines.push(i);
-                i += skip;
+                if (skip > 0) {
+                    i += (skip - 1);
+                }
             }
         }
         return lines;
     }
     
     function _toggleLineMarker(cm, line) {
-        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i;
+        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
         if (marks.length > 0) {
             //if we find any fold marks on this line then create an expand marker
             for (i = 0; i < marks.length; i++) {
                 if (marks[i].__isFold) {
-                    cm.setGutterMarker(line, "CodeMirror-linenumbers", _createCollapsedMarker(line + 1));
+                    lineMark =  _createCollapsedMarker(line + 1);
                     break;
                 }
             }
@@ -107,12 +113,35 @@ define(function (require, exports, module) {
             var lInfo = cm.lineInfo(line);
             if (lInfo.gutterMarkers) {
                 if (lInfo.gutterMarkers["CodeMirror-linenumbers"].textContent.indexOf(_collapsedChar) > -1) {
-                    cm.setGutterMarker(line, "CodeMirror-linenumbers", _createExpandedMarker(line + 1));
+                    lineMark  = _createExpandedMarker(line + 1);
                 }
             } else { //no gutter markers on this line
-                cm.setGutterMarker(line, "CodeMirror-linenumbers", _createExpandedMarker(line + 1));
+                lineMark  = _createExpandedMarker(line + 1);
             }
         }
+        
+        if (lineMark) {
+            cm.setGutterMarker(line, "CodeMirror-linenumbers", lineMark);
+        }
+    }
+    
+     /**
+     * goes through the visible part of the document and decorates the line numbers with icons for
+     * colapsing and expanding code sections
+     */
+    function _decorateGutters(editor) {
+        var cm = editor._codeMirror;
+        var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
+        collapsibleLines.forEach(function (line) {
+            _toggleLineMarker(cm, line);
+        });
+    }
+    
+     
+    function _handleGutterClick(cm, n) {
+        var editor = EditorManager.getCurrentFullEditor();
+        foldFunc(cm, n);
+        _decorateGutters(editor);
     }
     
     //define new fold function for code mirror
@@ -163,18 +192,6 @@ define(function (require, exports, module) {
             });
         };
     };
-       
-     /**
-     * goes through the visible part of the document and decorates the line numbers with icons for
-     * colapsing and expanding code sections
-     */
-    function _decorateGutters(editor) {
-        var cm = editor._codeMirror;
-        var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
-        collapsibleLines.forEach(function (line) {
-            _toggleLineMarker(cm, line);
-        });
-    }
     
     function _handleScroll(event, editor) {
         _decorateGutters(editor);
@@ -191,11 +208,6 @@ define(function (require, exports, module) {
         cm.clearGutter("CodeMirror-linenumbers");
     }
  
-    function _handleGutterClick(cm, n) {
-        var editor = EditorManager.getCurrentFullEditor();
-        foldFunc(cm, n);
-        _decorateGutters(editor);
-    }
     
     function _registerHandlers(editor, fileType) {
         var cm = editor._codeMirror, doc = editor.document;
