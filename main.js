@@ -49,29 +49,19 @@ define(function (require, exports, module) {
     
     var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     
-    function _createMarker(lineNum, mark, lineNumClassName, markClassName) {
-        var marker = document.createElement("div"), iconSpan;
-        var lineNumSpan = document.createElement("span");
-        lineNumSpan.innerHTML = lineNum;
-        marker.appendChild(lineNumSpan);
-        if (mark) {
-            iconSpan = document.createElement("span");
-            iconSpan.className = markClassName;
-            iconSpan.innerHTML = mark;
-            marker.appendChild(iconSpan);
-        }
-        marker.className = lineNumClassName;
+    function _createMarker(mark, className) {
+        var marker = document.createElement("div");
+        marker.innerHTML = mark;
+        marker.className = className;
         return marker;
     }
     
     function _createCollapsedMarker(lineNum) {
-        return _createMarker(lineNum, _collapsedChar, "CodeMirror-linenumber cm-thehogfather-codefolding",
-                             "cm-thehogfather-codefolding-collapsed");
+        return _createMarker(_collapsedChar, "codefolding-collapsed");
     }
     
     function _createExpandedMarker(lineNum) {
-        return _createMarker(lineNum, _expandedChar, "CodeMirror-linenumber cm-thehogfather-codefolding",
-                             "cm-thehogfather-codefolding-expanded");
+        return _createMarker(_expandedChar, "codefolding-expanded");
     }
     
     function _getCollapsibleLines(cm, rangeFinder) {
@@ -100,7 +90,7 @@ define(function (require, exports, module) {
     function _toggleLineMarker(cm, line) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
         if (marks.length > 0) {
-            //if we find any fold marks on this line then create an expand marker
+            //if we find any fold marks on this line then create a collapse marker
             for (i = 0; i < marks.length; i++) {
                 if (marks[i].__isFold) {
                     lineMark =  _createCollapsedMarker(line + 1);
@@ -112,16 +102,16 @@ define(function (require, exports, module) {
             //so only decorate it if it is already expanded
             var lInfo = cm.lineInfo(line);
             if (lInfo.gutterMarkers) {
-                if (lInfo.gutterMarkers["CodeMirror-linenumbers"].textContent.indexOf(_collapsedChar) > -1) {
+                if (lInfo.gutterMarkers["code-folding-gutter"].textContent.indexOf(_collapsedChar) > -1) {
                     lineMark  = _createExpandedMarker(line + 1);
                 }
-            } else { //no gutter markers on this line
+            } else { //no gutter markers on this line so probably first time decorating document
                 lineMark  = _createExpandedMarker(line + 1);
             }
         }
         
         if (lineMark) {
-            cm.setGutterMarker(line, "CodeMirror-linenumbers", lineMark);
+            cm.setGutterMarker(line, "code-folding-gutter", lineMark);
         }
     }
     
@@ -138,10 +128,12 @@ define(function (require, exports, module) {
     }
     
      
-    function _handleGutterClick(cm, n) {
-        var editor = EditorManager.getCurrentFullEditor();
-        foldFunc(cm, n);
-        _decorateGutters(editor);
+    function _handleGutterClick(cm, n, gutterId) {
+        if (gutterId === "code-folding-gutter") {
+            var editor = EditorManager.getCurrentFullEditor();
+            foldFunc(cm, n);
+            _decorateGutters(editor);
+        }
     }
     
     //define new fold function for code mirror
@@ -203,15 +195,28 @@ define(function (require, exports, module) {
             _decorateGutters(editor);
         }
     }
-    
-    function _undecorateGutters(cm) {
-        cm.clearGutter("CodeMirror-linenumbers");
+    /** remove the code-folding-gutter*/
+    function _removeGutter(cm) {
+        cm.clearGutter("code-folding-gutter");
+        var gutters = cm.getOption("gutters").splice(0),
+            codeFoldingGutterIndex = gutters.indexOf("code-folding-gutter");
+        if (codeFoldingGutterIndex > -1) {
+            gutters.splice(codeFoldingGutterIndex, 1);
+            cm.setOption("gutters", gutters);
+        }
     }
- 
     
     function _registerHandlers(editor, fileType) {
         var cm = editor._codeMirror, doc = editor.document;
         if (cm) {
+            //add new gutter to cm
+            var gutters = cm.getOption("gutters").slice(0);
+            if (gutters.indexOf("code-folding-gutter") < 0) {
+                //put fold marker to immediate right of line number
+                var lineNumberGutterIndex = gutters.indexOf("CodeMirror-linenumbers");
+                gutters.splice(lineNumberGutterIndex + 1, 0, "code-folding-gutter");
+                cm.setOption("gutters", gutters);
+            }
             //create the appropriate folding function based on the file that was opened
             var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
             if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
@@ -236,7 +241,7 @@ define(function (require, exports, module) {
         if (cm) {
             $(editor).off("scroll", _handleScroll);
             cm.off("gutterClick", _handleGutterClick);
-            _undecorateGutters(cm);
+            _removeGutter(cm);
         }
     }
     
