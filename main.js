@@ -21,7 +21,7 @@
 *
 */
 /**
- * main file for code folding in brackets based on Code mirror's code folding addon feature
+ * main file for code folding in brackets
  * @author Patrick Oladimeji
  * @date 4/14/13 17:19:25 PM
  */
@@ -47,8 +47,10 @@ define(function (require, exports, module) {
         _braceCollapsibleExtensions = [".js", ".css", ".less", ".json"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"];
     
-    var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     
+    var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
+    CodeMirror.newFoldFunction  = require("cmFoldFunction");
+
     function _createMarker(mark, className) {
         var marker = document.createElement("div");
         marker.innerHTML = mark;
@@ -102,7 +104,8 @@ define(function (require, exports, module) {
             //so only decorate it if it is already expanded
             var lInfo = cm.lineInfo(line);
             if (lInfo.gutterMarkers) {
-                if (lInfo.gutterMarkers["code-folding-gutter"].textContent.indexOf(_collapsedChar) > -1) {
+                if (lInfo.gutterMarkers["code-folding-gutter"] &&
+                        lInfo.gutterMarkers["code-folding-gutter"].textContent.indexOf(_collapsedChar) > -1) {
                     lineMark  = _createExpandedMarker(line + 1);
                 }
             } else { //no gutter markers on this line so probably first time decorating document
@@ -136,55 +139,6 @@ define(function (require, exports, module) {
         }
     }
     
-    //define new fold function for code mirror
-    //  Copyright (C) 2011 by Daniel Glazman <daniel@glazman.org>
-    // released under the MIT license (../../LICENSE) like the rest of CodeMirror
-    CodeMirror.newFoldFunction = function (rangeFinder, widget) {
-        if (!widget) {
-            widget = _foldMarker;
-        }
-        if (typeof widget === "string") {
-            var text = document.createTextNode(widget);
-            widget = document.createElement("span");
-            widget.appendChild(text);
-            widget.className = "CodeMirror-foldmarker";
-        }
-    
-        return function (cm, pos) {
-            if (typeof pos === "number") {
-                pos = CodeMirror.Pos(pos, 0);
-            }
-            var range = rangeFinder(cm, pos);
-            if (!range) {
-                return;
-            }
-    
-            var present = cm.findMarksAt(range.from), cleared = 0, i;
-            for (i = 0; i < present.length; ++i) {
-                if (present[i].__isFold) {
-                    ++cleared;
-                    present[i].clear();
-                }
-            }
-            if (cleared) {
-                return;
-            }
-            var myWidget = widget.cloneNode(true);
-            var myRange = cm.markText(range.from, range.to, {
-                replacedWith: myWidget,
-                clearOnEnter: true,
-                __isFold: true
-            });
-            CodeMirror.on(widget, "mousedown", function () {
-                console.log(myRange);
-                myRange.clear();
-            });
-            CodeMirror.on(myRange, "clear", function () {
-                _toggleLineMarker(cm, pos.line);
-            });
-        };
-    };
-    
     function _handleScroll(event, editor) {
         _decorateGutters(editor);
     }
@@ -211,7 +165,7 @@ define(function (require, exports, module) {
         if (cm) {
             //add new gutter to cm
             var gutters = cm.getOption("gutters").slice(0);
-            if (gutters.indexOf("code-folding-gutter") < 0) {
+            if (gutters.indexOf("code-folding-gutter")  < 0) {
                 //put fold marker to immediate right of line number
                 var lineNumberGutterIndex = gutters.indexOf("CodeMirror-linenumbers");
                 gutters.splice(lineNumberGutterIndex + 1, 0, "code-folding-gutter");
@@ -226,7 +180,7 @@ define(function (require, exports, module) {
             }
             //add listeners if a rangeFinder was set
             if (_activeRangeFinder) {
-                foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder);
+                foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _toggleLineMarker);
                 $(doc).on("change", _handleDocumentChange);
                 cm.on("gutterClick", _handleGutterClick);
                 $(editor).on("scroll", _handleScroll);
