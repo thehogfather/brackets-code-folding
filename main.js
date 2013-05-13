@@ -32,20 +32,24 @@ define(function (require, exports, module) {
     "use strict";
     var CommandManager          = brackets.getModule("command/CommandManager"),
         DocumentManager         = brackets.getModule("document/DocumentManager"),
-        EditorManager            = brackets.getModule("editor/EditorManager"),
+        EditorManager           = brackets.getModule("editor/EditorManager"),
+        ProjectManager          = brackets.getModule("project/ProjectManager"),
+        PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
         Menus                   = brackets.getModule("command/Menus"),
         KeyEvent                = brackets.getModule("utils/KeyEvent"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
         AppInit                 = brackets.getModule("utils/AppInit"),
         braceRangeFinder        = require("braceRangeFinder"),
         tagRangeFinder          = require("tagRangeFinder"),
+        _prefs                  = PreferencesManager.getPreferenceStorage(module),
         CODE_FOLD_EXT           = "javascript.code.folding",
         _extensionEnabled       = true,
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
         _foldMarker             = "\u2194",
         _braceCollapsibleExtensions = [".js", ".css", ".less", ".json"],
-        _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"];
+        _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"],
+        _lineFolds              = [];
     
     
     var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
@@ -59,10 +63,17 @@ define(function (require, exports, module) {
     }
     
     function _createCollapsedMarker(lineNum) {
+        if (_lineFolds.indexOf(lineNum - 1) === -1) {
+            _lineFolds.push(lineNum - 1);
+        }
         return _createMarker(_collapsedChar, "codefolding-collapsed");
     }
     
     function _createExpandedMarker(lineNum) {
+        var index = _lineFolds.indexOf(lineNum - 1);
+        if (index > -1) {
+            _lineFolds.splice(index, 1);
+        }
         return _createMarker(_expandedChar, "codefolding-expanded");
     }
     
@@ -88,11 +99,11 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-    
+    //maybe this should be called renderline markers
     function _toggleLineMarker(cm, line) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
         if (marks.length > 0) {
-            //if we find any fold marks on this line then create a collapse marker
+            //if we find any fold marks on this line then create a collapsed marker
             for (i = 0; i < marks.length; i++) {
                 if (marks[i].__isFold) {
                     lineMark =  _createCollapsedMarker(line + 1);
@@ -116,6 +127,20 @@ define(function (require, exports, module) {
         if (lineMark) {
             cm.setGutterMarker(line, "code-folding-gutter", lineMark);
         }
+    }
+    /**
+     * Utility function to fold a line if it is not already folded
+     */
+    function _foldLine(cm, line) {
+        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i;
+        if (marks && marks.some(function (m) {
+                return m.__isFold;
+            })) {
+            return;
+        } else {
+            foldFunc(cm, line);
+        }
+        
     }
     
      /**
@@ -160,6 +185,20 @@ define(function (require, exports, module) {
         }
     }
     
+    function _updateRangeFinder(editor) {
+        //create the appropriate folding function based on the file that was opened
+        var doc = editor.document,
+            ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
+        if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
+            _activeRangeFinder = braceRangeFinder;
+        } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
+            _activeRangeFinder = tagRangeFinder;
+        }
+        if (_activeRangeFinder) {
+            foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _toggleLineMarker);
+        }
+    }
+    
     function _registerHandlers(editor, fileType) {
         var cm = editor._codeMirror, doc = editor.document;
         if (cm) {
@@ -171,16 +210,9 @@ define(function (require, exports, module) {
                 gutters.splice(lineNumberGutterIndex + 1, 0, "code-folding-gutter");
                 cm.setOption("gutters", gutters);
             }
-            //create the appropriate folding function based on the file that was opened
-            var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
-            if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
-                _activeRangeFinder = braceRangeFinder;
-            } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
-                _activeRangeFinder = tagRangeFinder;
-            }
+            _updateRangeFinder(editor);
             //add listeners if a rangeFinder was set
             if (_activeRangeFinder) {
-                foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _toggleLineMarker);
                 $(doc).on("change", _handleDocumentChange);
                 cm.on("gutterClick", _handleGutterClick);
                 $(editor).on("scroll", _handleScroll);
@@ -210,18 +242,38 @@ define(function (require, exports, module) {
         }
     }
    
+    function _saveFolds(event) {
+        //save the state of open documents in the editor
+        var editor = EditorManager.getCurrentFullEditor();
+        if (_extensionEnabled && editor) {
+            _prefs.setValue(editor.document.file.fullPath, _lineFolds);
+        }
+    }
+    
     $(EditorManager).on("activeEditorChange", function (event, current, previous) {
         if (_extensionEnabled) {
             _activeRangeFinder = undefined;
             if (previous) {
                 _deregisterHandlers(previous);
+                _prefs.setValue(previous.document.file.fullPath, _lineFolds);
             }
             if (current) {
+                _updateRangeFinder(current);
+                _lineFolds = _prefs.getValue(current.document.file.fullPath);
+                if (_lineFolds) {
+                    _lineFolds.map(function (line, index) {
+                        _foldLine(current._codeMirror, line);
+                    });
+                } else {
+                    _lineFolds = [];
+                }
                 _registerHandlers(current);
             }
         }
     });
-    
+    //save any other folds just before the project closes
+    $(ProjectManager).on("beforeProjectClose", _saveFolds);
+    $(ProjectManager).on("beforeAppClose", _saveFolds);
     //Load stylesheet
     ExtensionUtils.loadStyleSheet(module, "main.less");
     
