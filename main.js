@@ -47,10 +47,9 @@ define(function (require, exports, module) {
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
         _foldMarker             = "\u2194",
-        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json"],
+        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"],
         _lineFolds              = [];
-    
     
     var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/;
     CodeMirror.newFoldFunction  = require("cmFoldFunction");
@@ -99,8 +98,8 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-    //maybe this should be called renderline markers
-    function _toggleLineMarker(cm, line) {
+
+    function _renderLineFoldMarkers(cm, line) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
         if (marks.length > 0) {
             //if we find any fold marks on this line then create a collapsed marker
@@ -133,14 +132,11 @@ define(function (require, exports, module) {
      */
     function _foldLine(cm, line) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i;
-        if (marks && marks.some(function (m) {
-                return m.__isFold;
-            })) {
+        if (marks && marks.some(function (m) { return m.__isFold; })) {
             return;
         } else {
             foldFunc(cm, line);
         }
-        
     }
     
      /**
@@ -151,10 +147,9 @@ define(function (require, exports, module) {
         var cm = editor._codeMirror;
         var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
         collapsibleLines.forEach(function (line) {
-            _toggleLineMarker(cm, line);
+            _renderLineFoldMarkers(cm, line);
         });
     }
-    
      
     function _handleGutterClick(cm, n, gutterId) {
         if (gutterId === "code-folding-gutter") {
@@ -195,7 +190,7 @@ define(function (require, exports, module) {
             _activeRangeFinder = tagRangeFinder;
         }
         if (_activeRangeFinder) {
-            foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _toggleLineMarker);
+            foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
         }
     }
     
@@ -220,7 +215,7 @@ define(function (require, exports, module) {
             }
         }
     }
-    
+   
     function _deregisterHandlers(editor) {
         var cm = editor._codeMirror;
         $(editor.document).off("change", _handleDocumentChange);
