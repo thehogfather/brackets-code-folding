@@ -103,16 +103,16 @@ define(function (require, exports, module) {
         var allMarks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), foldMarks = [], i, lineMark;
     
         //sort through all gutter marks and find those related to code folding
-        for(i = 0; i < allMarks.length; i++) {
-            if(allMarks[i].__isFold) {
-        	foldMarks.push( allMarks[i] );
+        for (i = 0; i < allMarks.length; i++) {
+            if (allMarks[i].__isFold) {
+                foldMarks.push(allMarks[i]);
             }
         }
 
         if (foldMarks.length > 0) {
             //if we find any fold marks on this line then create a collapsed marker
             for (i = 0; i < foldMarks.length; i++) {
-            	lineMark =  _createCollapsedMarker(line + 1);
+                lineMark =  _createCollapsedMarker(line + 1);
                 break;
             }
         } else {
