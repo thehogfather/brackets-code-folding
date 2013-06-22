@@ -9,7 +9,8 @@ define(function (require, exports, module) {
     "use strict";
     var util                = require("./util"),
         addProp             = util.addProp,
-        _matchAll           = util.matchAll;
+        _matchAll           = util.matchAll,
+        copy                = util.copy;
     var pos = CodeMirror.Pos;
     var _rangeOpenTriggers = ["{", "[", "/*"], _rangeCloseTriggers =  ["}", "]", "*/"],
         _matchingPairs = {"{": "}", "[": "]", "/*": "*/", "}": "{", "]": "[", "*/": "/*"};
@@ -22,11 +23,8 @@ define(function (require, exports, module) {
                 .map(addProp("tagType", "open")),
             closeTagMatches = _matchAll(_closeRegex, lineText)
                 .map(addProp("line", line))
-                .map(addProp("tagType", "close")),
-            closeTag,
-            token,
-            i,
-            tag;
+                .map(addProp("tagType", "close"));
+        var closeTag, stackCopy, token, i, tag;
         /**
          * decides whether or not to ignore tags. tags are ignored if they are in the context of a string or comment
          */
@@ -63,6 +61,7 @@ define(function (require, exports, module) {
                         break;
                     }
                 } else if (matchStack.length) {
+                    stackCopy = copy(matchStack);
                     do {
                         matchStack.pop();
                     } while (matchStack.length && matchStack[matchStack.length - 1].matches[1] === _matchingPairs[tag.matches[1]]);
@@ -72,7 +71,7 @@ define(function (require, exports, module) {
                             break;
                         }
                     } else {
-                        matchStack = null;
+                        matchStack = stackCopy;
                         break;
                     }
                 }

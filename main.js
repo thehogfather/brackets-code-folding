@@ -111,10 +111,7 @@ define(function (require, exports, module) {
 
         if (foldMarks.length > 0) {
             //if we find any fold marks on this line then create a collapsed marker
-            for (i = 0; i < foldMarks.length; i++) {
-                lineMark =  _createCollapsedMarker(line + 1);
-                break;
-            }
+            lineMark =  _createCollapsedMarker(line + 1);
         } else {
             //no marks on this line meaning it might not be collapsible or it is expanded
             //so only decorate it if it is already expanded
@@ -151,6 +148,7 @@ define(function (require, exports, module) {
      */
     function _decorateGutters(editor) {
         var cm = editor._codeMirror;
+        cm.clearGutter("code-folding-gutter");
         var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder);
         collapsibleLines.forEach(function (line) {
             _renderLineFoldMarkers(cm, line);
