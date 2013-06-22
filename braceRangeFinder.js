@@ -7,43 +7,33 @@
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";
+    var util                = require("./util"),
+        addProp             = util.addProp,
+        _matchAll           = util.matchAll;
     var pos = CodeMirror.Pos;
     var _rangeOpenTriggers = ["{", "[", "/*"], _rangeCloseTriggers =  ["}", "]", "*/"],
         _matchingPairs = {"{": "}", "[": "]", "/*": "*/", "}": "{", "]": "[", "*/": "/*"};
-    var _commentRegex = /^(comment|string)/, _openRegex = /(\{|\[|\/\*)/g, _closeRegex = /(\}|\]|\*\/)/g;
+    var _openRegex = /(\{|\[|\/\*)/g, _closeRegex = /(\}|\]|\*\/)/g;
     
-    /**
-     * Utility function for matching all instances of a regular expression in a string
-     * @param regex the regular expression to apply
-     * @param string the string to apply the regular expression on
-     * returns Array<> an array of matches along with the index of occurence in the string
-     */
-    function _matchAll(regex, string) {
-        var res = [], m = regex.exec(string);
-        while (m) {
-            res.push({index: m.index + m[1].length, match: m[1]});
-            m = regex.exec(string);
-        }
-        return res;
-    }
-
     function _processLine(cm, line, matchStack, openTag) {
-        var addLineProp = (function (l) {
-            return function (d) {
-                d.line = l;
-                return d;
-            };
-        }(line));
-        
-        var lineText = cm.getLine(line), openTagMatches = _matchAll(_openRegex, lineText).map(addLineProp),
-            closeTagMatches = _matchAll(_closeRegex, lineText).map(addLineProp), closeTag, token, i, tag;
+        var lineText = cm.getLine(line),
+            openTagMatches = _matchAll(_openRegex, lineText)
+                .map(addProp("line", line))
+                .map(addProp("tagType", "open")),
+            closeTagMatches = _matchAll(_closeRegex, lineText)
+                .map(addProp("line", line))
+                .map(addProp("tagType", "close")),
+            closeTag,
+            token,
+            i,
+            tag;
         /**
          * decides whether or not to ignore tags. tags are ignored if they are in the context of a string or comment
          */
         function _ignoreTag(tag) {
-            var token = cm.getTokenAt(pos(tag.line, tag.index));
+            var token = cm.getTokenAt(pos(tag.line, tag.index + tag.matches[1].length));
             //ignore brraces in comments and strings
-            if (!token.type || (token.type === "comment" && (tag.match === "/*" || tag.match === "*/"))) {
+            if (!token.type || (token.type === "comment" && (tag.matches[1] === "/*" || tag.matches[1] === "*/"))) {
                 return false;
             }
             return true;
@@ -65,19 +55,19 @@ define(function (require, exports, module) {
         matchStack = matchStack || [];
         for (i = 0; i < allTags.length; i++) {
             tag = allTags[i];
-            if (_rangeOpenTriggers.indexOf(tag.match) > -1) {
+            if (tag.tagType === "open") {
                 matchStack.push(tag);
-            } else if (_rangeCloseTriggers.indexOf(tag.match) > -1) {
-                if (matchStack.length && _matchingPairs[matchStack[matchStack.length - 1].match] === tag.match) {
+            } else if (tag.tagType === "close") {
+                if (matchStack.length && _matchingPairs[matchStack[matchStack.length - 1].matches[1]] === tag.matches[1]) {
                     if (matchStack.pop() === openTag) {
                         break;
                     }
                 } else if (matchStack.length) {
                     do {
                         matchStack.pop();
-                    } while (matchStack.length && matchStack[matchStack.length - 1].match === _matchingPairs[tag.match]);
+                    } while (matchStack.length && matchStack[matchStack.length - 1].matches[1] === _matchingPairs[tag.matches[1]]);
                     //pop the last one if it is a matching one
-                    if (matchStack.length && matchStack[matchStack.length - 1].match === _matchingPairs[tag.match]) {
+                    if (matchStack.length && matchStack[matchStack.length - 1].matches[1] === _matchingPairs[tag.matches[1]]) {
                         if (matchStack.pop() === openTag) {
                             break;
                         }
@@ -90,7 +80,7 @@ define(function (require, exports, module) {
         }
         //set the opentag if not already initialised
         if (matchStack && matchStack.length && !openTag) {
-            openTag = matchStack[matchStack.length - 1];
+            openTag = matchStack[matchStack.length - 1];//should this not be matchStack[0]????
         }
         return {openTag: openTag, stack: matchStack};
     }
@@ -110,16 +100,18 @@ define(function (require, exports, module) {
             
             for (i = start.line + 1; i < lineCount; i++) {
                 lineText = cm.getLine(i);
-                stack = _processLine(cm, i, stack, openTag).stack;
-                //if stack is null then the open tag has no matching close tag if empty we found a match
-                if (!stack) {
-                    return;
-                }
-                
-                if (!stack.length) {
-                    var startIndex = openTag.index,
-                        endIndex = lineText.lastIndexOf(_matchingPairs[openTag.match]);
-                    return {from: pos(start.line, startIndex + 1), to: pos(i, endIndex)};
+                if (lineText.trim().length > 0) {
+                    stack = _processLine(cm, i, stack, openTag).stack;
+                    //if stack is null then the open tag has no matching close tag if empty we found a match
+                    if (!stack) {
+                        return;
+                    }
+                    
+                    if (!stack.length) {
+                        var startIndex = openTag.index + openTag.matches[1].length,
+                            endIndex = lineText.lastIndexOf(_matchingPairs[openTag.matches[1]]);
+                        return {from: pos(start.line, startIndex + 1), to: pos(i, endIndex)};
+                    }
                 }
             }
             return;
@@ -129,8 +121,9 @@ define(function (require, exports, module) {
     module.exports = {
         rangeFinder: rangeFinder,
         canFold: function (cm, lineNum) {
-            var lineData = _processLine(cm, lineNum);
-            return lineData.openTag ? true : false;
+//            var lineData = _processLine(cm, lineNum);
+//            return lineData.openTag ? true : false;
+            return rangeFinder(cm, pos(lineNum, 1));
         }
     };
 });

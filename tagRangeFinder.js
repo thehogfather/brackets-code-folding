@@ -3,50 +3,65 @@
  * @author Patrick Oladimeji
  * @date 4/19/13 23:03:05 PM
  */
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, regexp:true, maxerr: 50 */
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
-    var startTagRegex = /^\s*<(\w+)/, endTagRegex = /\s*<\/(\w+)>\s*$/;
-    
-    function _processLine(lineText, tagsStack) {
-        var startTagMatches = startTagRegex.exec(lineText), startTag;
-        var endTagMatches = endTagRegex.exec(lineText), endTag;
-      
-        if (startTagMatches && startTagMatches.length > 1) {
-            tagsStack = tagsStack || [];
-            startTag = startTagMatches[1].toLowerCase();
-            tagsStack.push(startTag);
-            
-        }
+    var startTagRegex = /\s*(<(\w+)\s*[^\/]*?>)/g, endTagRegex = /\s*(<\/(\w+)>)\s*/g;
+    var util                = require("./util"),
+        addProp             = util.addProp,
+        copy                = util.copy;
         
-        //can we find a close tag on the same line?
-        if (tagsStack && endTagMatches && endTagMatches.length > 1) {
-            endTag = endTagMatches[1].toLowerCase();
-            //pop the stack if this close tag matches the most recent open tag ie the head of the stack
-            if (tagsStack[tagsStack.length - 1] === endTag) {
-                tagsStack.pop();
-            } else {
-                //this might have been a typo? should we pop it anyway and 
-                //prioritise a close tag to match the most recent start tag?
-                //for now we just pop the stack until we find a match
-                do {
-                    tagsStack.pop();
-                } while (tagsStack.length > 0 && tagsStack[tagsStack.length - 1] !== endTag);
-               
-                if (tagsStack[tagsStack.length - 1] === endTag) {
-                    tagsStack.pop();
-                } else {
-                    tagsStack = null;
+    function _processLine(lineText, tagsStack, openTag) {
+        var startTagMatches = util.matchAll(startTagRegex, lineText)
+            .map(addProp("tagType", "open")), startTag;
+        var endTagMatches = util.matchAll(endTagRegex, lineText)
+            .map(addProp("tagType", "close")), endTag;
+        var allTags = startTagMatches.concat(endTagMatches)
+            .sort(function (a, b) { return a.index - b.index; });
+        var i, tag, stackCopy;
+        
+        tagsStack = tagsStack || [];
+        for (i = 0; i < allTags.length; i++) {
+            tag = allTags[i];
+            if (tag.tagType === "open") {
+                tagsStack.push(tag);
+            } else { //close tag
+                if (tagsStack.length && tagsStack[tagsStack.length - 1].matches[2] === tag.matches[2]) {
+                    //if this is the tag for which we initially started the rangeFind fn break out of loop
+                    //else just continue
+                    if (tagsStack.pop() === openTag) {
+                        break;
+                    }
+                } else if (tagsStack.length) {
+                    stackCopy = copy(tagsStack);
+                    do {
+                        tagsStack.pop();
+                    } while (tagsStack.length && tagsStack[tagsStack.length - 1].matches[2] !== tag.matches[2]);
+                    //pop the last tag if it is a matching one
+                    if (tagsStack.length && tagsStack[tagsStack.length - 1].matches[2] === tag.matches[2]) {
+                        //break out of loop if the popped tag is the open tag
+                        if (tagsStack.pop() === openTag) {
+                            break;
+                        }
+                    } else {
+                        tagsStack = stackCopy;
+                       // tagsStack = null;
+                        break;
+                    }
                 }
             }
         }
-        return tagsStack;
+       
+        if (!openTag && tagsStack && tagsStack.length) {
+            openTag = tagsStack[0];
+        }
+        return {openTag: openTag, stack: tagsStack, endTag: tag};
     }
     
     function rangeFinder(cm, start) {
-        var lineText, startLineText = cm.getLine(start.line);
-        var stack = _processLine(startLineText);
+        var lineText, startLineText = cm.getLine(start.line), endTag;
+        var lineRes = _processLine(startLineText), stack = lineRes.stack, openTag = lineRes.openTag;
         
         if (!stack || stack.length === 0) { //no match was found on line or tag was closed on line
             return;
@@ -56,16 +71,19 @@ define(function (require, exports, module) {
             
             for (i = start.line + 1; i < lineCount; i++) {
                 lineText = cm.getLine(i);
-                stack = _processLine(lineText, stack);
-                //if stack is null, then tag has no closing tag if it is empty we found a match
-                if (!stack) {
-                    return;
-                }
-                if (stack.length === 0) {
-                    var startCharIndex = startLineText.lastIndexOf(">"),
-                        endCharIndex    = lineText.lastIndexOf("<");
-                    return {from: CodeMirror.Pos(start.line, startCharIndex + 1),
-                           to: CodeMirror.Pos(i, endCharIndex)};
+                if (lineText.trim().length !== 0) {//skip blanks
+                
+                    lineRes = _processLine(lineText, stack, openTag);
+                    stack = lineRes.stack;
+                    if (stack && stack.length === 0) {
+                        endTag = lineRes.endTag;
+                        var startCharIndex = openTag.index + openTag.matches[0].length,
+                            endCharIndex = lineRes.endTag ?
+                                    (endTag.index  + endTag.matches[0].length - endTag.matches[1].length)
+                                    : lineText.lastIndexOf("<");
+                        return {from: CodeMirror.Pos(start.line, startCharIndex),
+                               to: CodeMirror.Pos(i, endCharIndex)};
+                    }
                 }
             }
             
