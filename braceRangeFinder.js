@@ -97,7 +97,7 @@ define(function (require, exports, module) {
         } else {
             var lineCount = cm.lineCount();
             
-            for (i = start.line + 1; i < lineCount; i++) {
+            for (i = line + 1; i < lineCount; i++) {
                 lineText = cm.getLine(i);
                 if (lineText.trim().length > 0) {
                     stack = _processLine(cm, i, stack, openTag).stack;
@@ -109,7 +109,7 @@ define(function (require, exports, module) {
                     if (!stack.length) {
                         var startIndex = openTag.index + openTag.matches[1].length,
                             endIndex = lineText.lastIndexOf(_matchingPairs[openTag.matches[1]]);
-                        return {from: pos(start.line, startIndex + 1), to: pos(i, endIndex)};
+                        return {from: pos(line, startIndex + 1), to: pos(i, endIndex)};
                     }
                 }
             }
@@ -120,8 +120,6 @@ define(function (require, exports, module) {
     module.exports = {
         rangeFinder: rangeFinder,
         canFold: function (cm, lineNum) {
-//            var lineData = _processLine(cm, lineNum);
-//            return lineData.openTag ? true : false;
             return rangeFinder(cm, pos(lineNum, 1));
         }
     };

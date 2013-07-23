@@ -31,7 +31,6 @@
 define(function (require, exports, module) {
     "use strict";
     var         _foldMarker             = "\u2194";
-    
     module.exports = function (rangeFinder, widget, onRangeCleared) {
         if (!widget) {
             widget = _foldMarker;
@@ -47,12 +46,8 @@ define(function (require, exports, module) {
             if (typeof pos === "number") {
                 pos = CodeMirror.Pos(pos, 0);
             }
-            var range = rangeFinder(cm, pos);
-            if (!range) {
-                return;
-            }
     
-            var present = cm.findMarksAt(range.from), cleared = 0, i;
+            var present = cm.findMarksAt({line: pos.line + 1, ch: 0}), cleared = 0, i, range;
             for (i = 0; i < present.length; ++i) {
                 if (present[i].__isFold) {
                     ++cleared;
@@ -62,6 +57,13 @@ define(function (require, exports, module) {
             if (cleared) {
                 return;
             }
+            
+            range = rangeFinder(cm, pos);
+            
+            if (!range) {
+                return;
+            }
+            
             var myWidget = widget.cloneNode(true);
             var myRange = cm.markText(range.from, range.to, {
                 replacedWith: myWidget,
@@ -76,6 +78,7 @@ define(function (require, exports, module) {
                     onRangeCleared(cm, pos.line);
                 }
             });
+            return range;
         };
     };
 });
