@@ -50,9 +50,11 @@ define(function (require, exports, module) {
         _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"],
         _lineFolds              = [],
-        scrollInterval;
+        scrollInterval,
+        changeInterval,
+        previousEditor;
     
-    var _activeRangeFinder, foldFunc, _commentOrString = /^(comment|string)/, lastViewportRange;
+    var _commentOrString = /^(comment|string)/;
     CodeMirror.newFoldFunction  = require("cmFoldFunction");
 
     function _createMarker(mark, className) {
@@ -81,14 +83,22 @@ define(function (require, exports, module) {
         return _createMarker(_expandedChar, "codefolding-expanded");
     }
     
+    function getRangeFinder(doc) {
+        //return the appropriate folding function based on the file that was opened
+        var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
+        if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
+            return braceRangeFinder;
+        } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
+            return tagRangeFinder;
+        }
+    }
+    
     function _getCollapsibleLines(cm, rangeFinder, from, to) {
         var lines = [], i, f = function (m) {return m.__isFold; };
         for (i = from; i <= to; i++) {
             //find out if the line is folded so no need to loop through
             var marks, skip = 0, j, foldRange;
             marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
-    
-            //check if foldable info is in hash before calling expensive rangeFinder
             foldRange = rangeFinder.canFold(cm, i);
             if (foldRange) {
                 lines.push(i);
@@ -104,7 +114,6 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-
     
     function _renderLineFoldMarkers(cm, line) {
         var allMarks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
@@ -120,14 +129,7 @@ define(function (require, exports, module) {
             //no marks on this line meaning it might not be collapsible or it is expanded
             //so only decorate it if it is already expanded
             var lInfo = cm.lineInfo(line);
-            if (lInfo.gutterMarkers) {
-                if (lInfo.gutterMarkers["code-folding-gutter"] &&
-                        lInfo.gutterMarkers["code-folding-gutter"].textContent.indexOf(_collapsedChar) > -1) {
-                    lineMark  = _createExpandedMarker(line + 1);
-                }
-            } else { //no gutter markers on this line so probably first time decorating document
-                lineMark  = _createExpandedMarker(line + 1);
-            }
+            lineMark  = _createExpandedMarker(line + 1);
         }
         if (lineMark) {
             cm.setGutterMarker(line, "code-folding-gutter", lineMark);
@@ -136,7 +138,7 @@ define(function (require, exports, module) {
     /**
      * Utility function to fold a line if it is not already folded
      */
-    function _foldLine(cm, line) {
+    function _foldLine(cm, line, foldFunc) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i;
         if (marks && marks.some(function (m) { return m.__isFold; })) {
             return;
@@ -149,68 +151,56 @@ define(function (require, exports, module) {
      * goes through the visible part of the document and decorates the line numbers with icons for
      * colapsing and expanding code sections
      */
-    function _decorateGutters(editor, from, to) {
-        var cm = editor._codeMirror, i;
-        var collapsibleLines = _getCollapsibleLines(cm, _activeRangeFinder, from, to);
+    function _decorateGutters(cm, from, to, editor) {
+        editor = editor || EditorManager.getCurrentFullEditor();
+        var rangeFinder = getRangeFinder(editor.document);
+        var i, collapsibleLines = _getCollapsibleLines(cm, rangeFinder, from, to);
         collapsibleLines.forEach(function (line) {
             _renderLineFoldMarkers(cm, line);
         });
+        //draw inline fold marks if any        
+        var inlineEds = EditorManager.getInlineEditors(editor);
+        inlineEds.forEach(function (ed) {
+            _decorateGutters(ed._codeMirror, ed.getFirstVisibleLine(), ed.getLastVisibleLine(), ed);
+        });
     }
-     
-    function _handleGutterClick(cm, n, gutterId) {
-        if (gutterId === "code-folding-gutter" && cm.lineInfo(n).gutterMarkers) {
-            var editor = EditorManager.getActiveEditor();
-            var range = foldFunc(cm, n);
-            var vp = cm.getViewport();
-            //_renderLineFoldMarkers(cm, n);
-            _decorateGutters(editor, vp.from, vp.to);
-        }
-    }
-
     
     function _handleScroll(event, editor) {
-        var cm = editor._codeMirror, vp = cm.getViewport(), from, to, collapsibleLines;
-        
         function doScroll() {
-            if (lastViewportRange) {
-                if (vp.from === lastViewportRange.from) {
-                    from = Math.min(vp.to, lastViewportRange.to);
-                    to = Math.max(vp.to, lastViewportRange.to);
-                } else if (vp.from < lastViewportRange.from) {
-                    from = vp.from;
-                    to = Math.min(lastViewportRange.from, vp.to);
-                } else if (vp.from > lastViewportRange.from) {
-                    from = Math.max(vp.from, lastViewportRange.to);
-                    to = vp.to;
-                }
-                _decorateGutters(editor, from, to);
-            } else {
-                _decorateGutters(editor, vp.from, vp.to);
-            }
-            //_decorateGutters(editor, vp.from, vp.to);
-            lastViewportRange = vp;
+            var cm = editor._codeMirror;
+            var vp = cm.getViewport();
+            _decorateGutters(cm, vp.from, vp.to);
         }
-        //optimize gutter decoration for files with more than 1000 lines of code
-        if (cm.lineCount() > 1000) {
-            clearInterval(scrollInterval);
-            scrollInterval = setTimeout(function () {
-                doScroll();
-            }, 50);
-        } else {
-            doScroll();
+        
+        clearInterval(scrollInterval);
+        scrollInterval = setTimeout(function () {
+            editor._codeMirror.operation(doScroll);
+        }, 250);
+    }
+    
+    function _handleGutterClick(cm, n, gutterId) {
+        if (gutterId === "code-folding-gutter" && cm.lineInfo(n).gutterMarkers) {
+            var rangeFinder = getRangeFinder(EditorManager.getActiveEditor().document);
+            var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+            var range = foldFunc(cm, n);
+            if (range) {
+                _decorateGutters(cm, range.from.line, range.to.line);
+            }
         }
     }
     
     function _handleDocumentChange(event, document, changeList) {
-        var editor = EditorManager.getActiveEditor(), cm = editor._codeMirror, i;
-        if (editor) {
-            var vp = cm.getViewport();
-            _decorateGutters(editor, changeList.from.line, vp.to);
+        var editor = EditorManager.getCurrentFullEditor(), cm = editor._codeMirror, i;
+        if (cm) {
+            clearInterval(changeInterval);
+            changeInterval = setTimeout(function () {
+                _decorateGutters(cm, changeList.from.line, changeList.to.line);
+            }, 250);
         }
     }
+
     /** remove the code-folding-gutter*/
     function _removeGutter(cm) {
-        cm.clearGutter("code-folding-gutter");
         var gutters = cm.getOption("gutters").splice(0),
             codeFoldingGutterIndex = gutters.indexOf("code-folding-gutter");
         if (codeFoldingGutterIndex > -1) {
@@ -218,24 +208,19 @@ define(function (require, exports, module) {
             cm.setOption("gutters", gutters);
         }
     }
-    
-    function _updateRangeFinder(editor) {
-        //create the appropriate folding function based on the file that was opened
-        var doc = editor.document,
-            ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
-        if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
-            _activeRangeFinder = braceRangeFinder;
-        } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
-            _activeRangeFinder = tagRangeFinder;
-        }
-        if (_activeRangeFinder) {
-            foldFunc = CodeMirror.newFoldFunction(_activeRangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+
+    function _deregisterHandlers(editor) {
+        var cm = editor._codeMirror;
+        $(editor).off("scroll", _handleScroll);
+        if (cm) {
+            cm.off("gutterClick", _handleGutterClick);
         }
     }
     
-    function _registerHandlers(editor, fileType) {
+    function _registerHandlers(editor) {
         var cm = editor._codeMirror, doc = editor.document;
         if (cm) {
+            _deregisterHandlers(editor);
             //add new gutter to cm
             var gutters = cm.getOption("gutters").slice(0);
             if (gutters.indexOf("code-folding-gutter")  < 0) {
@@ -244,70 +229,80 @@ define(function (require, exports, module) {
                 gutters.splice(lineNumberGutterIndex + 1, 0, "code-folding-gutter");
                 cm.setOption("gutters", gutters);
             }
-            _updateRangeFinder(editor);
             //add listeners if a rangeFinder was set
-            if (_activeRangeFinder) {
+            $(doc).on("change", _handleDocumentChange);
+            cm.on("gutterClick", _handleGutterClick);
+            $(editor).on("scroll", _handleScroll);
+            setTimeout(function () {
                 var vp = cm.getViewport();
-                $(doc).on("change", _handleDocumentChange);
-                cm.on("gutterClick", _handleGutterClick);
-                $(editor).on("scroll", _handleScroll);
-                _decorateGutters(editor, vp.from, vp.to);
-            }
+                _decorateGutters(cm, Math.max(vp.from, editor.getFirstVisibleLine()),
+                                 Math.min(vp.to, editor.getLastVisibleLine()), editor);
+            }, 250);
+            //}
         }
     }
    
-    function _deregisterHandlers(editor) {
-        var cm = editor._codeMirror;
-        $(editor.document).off("change", _handleDocumentChange);
-        if (cm) {
-            $(editor).off("scroll", _handleScroll);
-            cm.off("gutterClick", _handleGutterClick);
-            _removeGutter(cm);
+    function restoreLineFolds(editor) {
+        var cm = editor._codeMirror, rangeFinder, foldFunc;
+        _lineFolds = _prefs.getValue(editor.document.file.fullPath);
+        if (_lineFolds && _lineFolds.length) {
+            if (cm) {
+                rangeFinder = getRangeFinder(editor.document);
+                foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+                _lineFolds.map(function (line, index) {
+                    _foldLine(cm, line, foldFunc);
+                });
+            }
+        } else {
+            _lineFolds = [];
         }
     }
     
+    function _handleActiveEditorChange(event, current, previous) {
+        if (_extensionEnabled) {
+            if (current) {
+                restoreLineFolds(current);
+                _registerHandlers(current);
+            }
+        }
+    }
+        
     function _toggleExtension() {
-        var editor = EditorManager.getActiveEditor();
+        var editor = EditorManager.getCurrentFullEditor();
         _extensionEnabled = !_extensionEnabled;
         CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
         if (_extensionEnabled) {
             _registerHandlers(editor);
         } else {
             _deregisterHandlers(editor);
+            _removeGutter(editor._codeMirror);
         }
     }
    
     function _saveFolds(event) {
         //save the state of open documents in the editor
-        var editor = EditorManager.getActiveEditor();
+        var editor = EditorManager.getCurrentFullEditor();
         if (_extensionEnabled && editor) {
             _prefs.setValue(editor.document.file.fullPath, _lineFolds);
         }
     }
-
+    
     function init() {
-        $(EditorManager).on("activeEditorChange", function (event, current, previous) {
+        $(DocumentManager).on("currentDocumentChange", function () {
+            var current = EditorManager.getCurrentFullEditor();
             if (_extensionEnabled) {
-                lastViewportRange = undefined;
-                _activeRangeFinder = undefined;
-                if (previous) {
-                    _deregisterHandlers(previous);
-                    _prefs.setValue(previous.document.file.fullPath, _lineFolds);
+                if (previousEditor) {
+                    _deregisterHandlers(previousEditor);
+                    _prefs.setValue(previousEditor.document.file.fullPath, _lineFolds);
                 }
-                if (current) {
-                    _updateRangeFinder(current);
-                    _lineFolds = _prefs.getValue(current.document.file.fullPath);
-                    if (_lineFolds) {
-                        _lineFolds.map(function (line, index) {
-                            _foldLine(current._codeMirror, line);
-                        });
-                    } else {
-                        _lineFolds = [];
-                    }
-                    _registerHandlers(current);
-                }
+                previousEditor = current;
+            } else {
+                //remove gutters if there are any stales
+                _removeGutter(current._codeMirror);
             }
         });
+        
+        $(EditorManager).on("activeEditorChange", _handleActiveEditorChange);
         //save any other folds just before the project closes
         $(ProjectManager).on("beforeProjectClose", _saveFolds);
         $(ProjectManager).on("beforeAppClose", _saveFolds);
