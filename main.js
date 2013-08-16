@@ -83,9 +83,13 @@ define(function (require, exports, module) {
         return _createMarker(_expandedChar, "codefolding-expanded");
     }
     
+    function _extension(doc) {
+        return doc ? doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase() : "";
+    }
+    
     function getRangeFinder(doc) {
         //return the appropriate folding function based on the file that was opened
-        var ext = doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase();
+        var ext = _extension(doc);
         if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
             return braceRangeFinder;
         } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
@@ -135,14 +139,22 @@ define(function (require, exports, module) {
             cm.setGutterMarker(line, "code-folding-gutter", lineMark);
         }
     }
+    
+    function _isFolded(cm, line) {
+        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0));
+        return marks ? marks.some(function (m) {return m.__isFold; }) : false;
+    }
     /**
      * Utility function to fold a line if it is not already folded
      */
     function _foldLine(cm, line, foldFunc) {
-        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i;
-        if (marks && marks.some(function (m) { return m.__isFold; })) {
-            return;
-        } else {
+        if (!_isFolded(cm, line)) {
+            foldFunc(cm, line);
+        }
+    }
+    //expands a line if not already expanded
+    function _expandLine(cm, line, foldFunc) {
+        if (_isFolded(cm, line)) {
             foldFunc(cm, line);
         }
     }
@@ -163,6 +175,32 @@ define(function (require, exports, module) {
         inlineEds.forEach(function (ed) {
             _decorateGutters(ed._codeMirror, ed.getFirstVisibleLine(), ed.getLastVisibleLine(), ed);
         });
+    }
+    
+    function collapseAll() {
+        var editor = EditorManager.getFocusedEditor();
+        if (editor && editor._codeMirror) {
+            var rangeFinder = getRangeFinder(editor.document);
+            var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
+            var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+            lines.forEach(function (line) {
+                _foldLine(editor._codeMirror, line, foldFunc);
+                _renderLineFoldMarkers(editor._codeMirror, line);
+            });
+        }
+    }
+    
+    function expandAll() {
+        var editor = EditorManager.getFocusedEditor();
+        if (editor && editor._codeMirror) {
+            var rangeFinder = getRangeFinder(editor.document);
+            var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
+            var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+            lines.forEach(function (line) {
+                _expandLine(editor._codeMirror, line, foldFunc);
+                _renderLineFoldMarkers(editor._codeMirror, line);
+            });
+        }
     }
     
     function _handleScroll(event, editor) {
@@ -263,6 +301,14 @@ define(function (require, exports, module) {
             if (current) {
                 restoreLineFolds(current);
                 _registerHandlers(current);
+                //update the context menu to only allow foldall and collapseall in css or less files
+                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem("code.collapse");
+                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem("code.expand");
+                var ext = _extension(current.document);
+                if ([".css", ".less"].indexOf(ext) > -1) {
+                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem("code.collapse");
+                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem("code.expand");
+                }
             }
         }
     }
@@ -312,6 +358,9 @@ define(function (require, exports, module) {
         CommandManager.register("Enable Code Folding", CODE_FOLD_EXT, _toggleExtension);
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLD_EXT);
         CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
+        
+        CommandManager.register("Collapse all code", "code.collapse", collapseAll);
+        CommandManager.register("Expand all code", "code.expand", expandAll);
     }
     
     init();
