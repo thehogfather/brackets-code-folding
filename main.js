@@ -43,6 +43,8 @@ define(function (require, exports, module) {
         tagRangeFinder          = require("tagRangeFinder"),
         _prefs                  = PreferencesManager.getPreferenceStorage(module),
         CODE_FOLD_EXT           = "javascript.code.folding",
+        COLLAPSE_ALL            = "code.collapse.all",
+        EXPAND_ALL              = "code.expand.all",
         _extensionEnabled       = true,
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
@@ -302,12 +304,12 @@ define(function (require, exports, module) {
                 restoreLineFolds(current);
                 _registerHandlers(current);
                 //update the context menu to only allow foldall and collapseall in css or less files
-                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem("code.collapse");
-                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem("code.expand");
+                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(COLLAPSE_ALL);
+                Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(EXPAND_ALL);
                 var ext = _extension(current.document);
                 if ([".css", ".less"].indexOf(ext) > -1) {
-                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem("code.collapse");
-                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem("code.expand");
+                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(COLLAPSE_ALL);
+                    Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(EXPAND_ALL);
                 }
             }
         }
@@ -359,8 +361,8 @@ define(function (require, exports, module) {
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLD_EXT);
         CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
         
-        CommandManager.register("Collapse all code", "code.collapse", collapseAll);
-        CommandManager.register("Expand all code", "code.expand", expandAll);
+        CommandManager.register("Collapse All", COLLAPSE_ALL, collapseAll);
+        CommandManager.register("Expand All", EXPAND_ALL, expandAll);
     }
     
     init();
