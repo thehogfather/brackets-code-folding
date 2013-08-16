@@ -1,6 +1,8 @@
 #Code folding for Brackets
 A code folding extension for [Brackets](https://github.com/adobe/brackets/) based on [CodeMirror's folding addon](http://codemirror.net/demo/folding.html).
-Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has very rudimentary support for html and xml files based on tag matching.
+Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has some support for html and xml files based on tag matching.
+
+Supports quickly collapsing and expanding all code regions for .css and .less files through context menu items.
 
 ### How to install
 Navigate to **Brackets > File > Install Extension** and paste url https://github.com/thehogfather/brackets-code-folding
