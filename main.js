@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         KeyEvent                = brackets.getModule("utils/KeyEvent"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
         AppInit                 = brackets.getModule("utils/AppInit"),
+        FileUtils               = brackets.getModule("file/FileUtils"),
         braceRangeFinder        = require("braceRangeFinder"),
         tagRangeFinder          = require("tagRangeFinder"),
         _prefs                  = PreferencesManager.getPreferenceStorage(module),
@@ -51,13 +52,24 @@ define(function (require, exports, module) {
         _foldMarker             = "\u2194",
         _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"],
-        _lineFolds              = [],
         scrollInterval,
         changeInterval,
         previousEditor;
-    
+
     var _commentOrString = /^(comment|string)/;
     CodeMirror.newFoldFunction  = require("cmFoldFunction");
+
+    function _isFolded(cm, line) {
+        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0));
+        return marks ? marks.some(function (m) {return m.__isFold; }) : false;
+    }
+
+    function getLineFolds(path) {
+        if (!_prefs.getValue(path)) {
+            _prefs.setValue(path, []);
+        }
+        return _prefs.getValue(path);
+    }
 
     function _createMarker(mark, className) {
         var marker = document.createElement("div");
@@ -65,40 +77,29 @@ define(function (require, exports, module) {
         marker.className = className;
         return marker;
     }
-    
+
     function _createCollapsedMarker(lineNum) {
-        if (_lineFolds.indexOf(lineNum - 1) === -1) {
-            _lineFolds.push(lineNum - 1);
-        }
         return _createMarker(_collapsedChar, "codefolding-collapsed");
     }
-    
+
     function _removeMarker(cm, lineNum) {
         cm.setGutterMarker(lineNum, "code-folding-gutter", null);
     }
-    
+
     function _createExpandedMarker(lineNum) {
-        var index = _lineFolds.indexOf(lineNum - 1);
-        if (index > -1) {
-            _lineFolds.splice(index, 1);
-        }
         return _createMarker(_expandedChar, "codefolding-expanded");
     }
-    
-    function _extension(doc) {
-        return doc ? doc.file.fullPath.slice(doc.file.fullPath.lastIndexOf(".")).toLowerCase() : "";
-    }
-    
+
     function getRangeFinder(doc) {
         //return the appropriate folding function based on the file that was opened
-        var ext = _extension(doc);
+        var ext = FileUtils.getFilenameExtension(doc.file.fullPath);
         if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
             return braceRangeFinder;
         } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
             return tagRangeFinder;
         }
     }
-    
+
     function _getCollapsibleLines(cm, rangeFinder, from, to) {
         var lines = [], i, f = function (m) {return m.__isFold; };
         for (i = from; i <= to; i++) {
@@ -120,15 +121,11 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-    
+
+
     function _renderLineFoldMarkers(cm, line) {
-        var allMarks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0)), i, lineMark;
-        //sort through all gutter marks and find those related to code folding
-        var foldMarks = allMarks.filter(function (m) {
-            return m.__isFold;
-        });
-       
-        if (foldMarks.length > 0) {
+        var lineMark;
+        if (_isFolded(cm, line)) {
             //if we find any fold marks on this line then create a collapsed marker
             lineMark =  _createCollapsedMarker(line + 1);
         } else {
@@ -141,11 +138,8 @@ define(function (require, exports, module) {
             cm.setGutterMarker(line, "code-folding-gutter", lineMark);
         }
     }
-    
-    function _isFolded(cm, line) {
-        var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0));
-        return marks ? marks.some(function (m) {return m.__isFold; }) : false;
-    }
+
+
     /**
      * Utility function to fold a line if it is not already folded
      */
@@ -160,7 +154,7 @@ define(function (require, exports, module) {
             foldFunc(cm, line);
         }
     }
-    
+
      /**
      * goes through the visible part of the document and decorates the line numbers with icons for
      * colapsing and expanding code sections
@@ -172,13 +166,13 @@ define(function (require, exports, module) {
         collapsibleLines.forEach(function (line) {
             _renderLineFoldMarkers(cm, line);
         });
-        //draw inline fold marks if any        
+        //draw inline fold marks if any
         var inlineEds = EditorManager.getInlineEditors(editor);
         inlineEds.forEach(function (ed) {
             _decorateGutters(ed._codeMirror, ed.getFirstVisibleLine(), ed.getLastVisibleLine(), ed);
         });
     }
-    
+
     function collapseAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
@@ -191,7 +185,7 @@ define(function (require, exports, module) {
             });
         }
     }
-    
+
     function expandAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
@@ -204,31 +198,30 @@ define(function (require, exports, module) {
             });
         }
     }
-    
-    function _handleScroll(event, editor) {
+
+    function _handleScroll(cm, from, to) {
         function doScroll() {
-            var cm = editor._codeMirror;
-            var vp = cm.getViewport();
-            _decorateGutters(cm, vp.from, vp.to);
+            _decorateGutters(cm, from, to);
         }
-        
+
         clearInterval(scrollInterval);
         scrollInterval = setTimeout(function () {
-            editor._codeMirror.operation(doScroll);
+            cm.operation(doScroll);
         }, 250);
     }
-    
+
     function _handleGutterClick(cm, n, gutterId) {
         if (gutterId === "code-folding-gutter" && cm.lineInfo(n).gutterMarkers) {
             var rangeFinder = getRangeFinder(EditorManager.getActiveEditor().document);
+            var vp = cm.getViewport();
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
             var range = foldFunc(cm, n);
             if (range) {
-                _decorateGutters(cm, range.from.line, range.to.line);
+                _decorateGutters(cm, range.from.line, Math.max(range.to.line, vp.to));
             }
         }
     }
-    
+
     function _handleDocumentChange(event, document, changeList) {
         var editor = EditorManager.getCurrentFullEditor(), cm = editor._codeMirror, i;
         if (cm) {
@@ -251,12 +244,12 @@ define(function (require, exports, module) {
 
     function _deregisterHandlers(editor) {
         var cm = editor._codeMirror;
-        $(editor).off("scroll", _handleScroll);
+        cm.off("viewportChange", _handleScroll);
         if (cm) {
             cm.off("gutterClick", _handleGutterClick);
         }
     }
-    
+
     function _registerHandlers(editor) {
         var cm = editor._codeMirror, doc = editor.document;
         if (cm) {
@@ -272,19 +265,18 @@ define(function (require, exports, module) {
             //add listeners if a rangeFinder was set
             $(doc).on("change", _handleDocumentChange);
             cm.on("gutterClick", _handleGutterClick);
-            $(editor).on("scroll", _handleScroll);
+            cm.on("viewportChange", _handleScroll);
             setTimeout(function () {
                 var vp = cm.getViewport();
                 _decorateGutters(cm, Math.max(vp.from, editor.getFirstVisibleLine()),
                                  Math.min(vp.to, editor.getLastVisibleLine()), editor);
             }, 250);
-            //}
         }
     }
-   
+
     function restoreLineFolds(editor) {
         var cm = editor._codeMirror, rangeFinder, foldFunc;
-        _lineFolds = _prefs.getValue(editor.document.file.fullPath);
+        var _lineFolds = getLineFolds(editor.document.file.fullPath);
         if (_lineFolds && _lineFolds.length) {
             if (cm) {
                 rangeFinder = getRangeFinder(editor.document);
@@ -293,11 +285,19 @@ define(function (require, exports, module) {
                     _foldLine(cm, line, foldFunc);
                 });
             }
-        } else {
-            _lineFolds = [];
         }
     }
-    
+
+    function saveLineFolds(editor) {
+        var folds = [], i = 0;
+        for (i = 0; i < editor.lineCount(); i++) {
+            if (_isFolded(editor._codeMirror, i)) {
+                folds.push(i);
+            }
+        }
+        _prefs.setValue(editor.document.file.fullPath, folds);
+    }
+
     function _handleActiveEditorChange(event, current, previous) {
         if (_extensionEnabled) {
             if (current) {
@@ -306,15 +306,19 @@ define(function (require, exports, module) {
                 //update the context menu to only allow foldall and collapseall in css or less files
                 Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(COLLAPSE_ALL);
                 Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(EXPAND_ALL);
-                var ext = _extension(current.document);
+                var ext = FileUtils.getFilenameExtension(current.document.file.fullPath);
                 if ([".css", ".less"].indexOf(ext) > -1) {
                     Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(COLLAPSE_ALL);
                     Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(EXPAND_ALL);
                 }
             }
+
+            if (previous) {
+                saveLineFolds(previous);
+            }
         }
     }
-        
+
     function _toggleExtension() {
         var editor = EditorManager.getCurrentFullEditor();
         _extensionEnabled = !_extensionEnabled;
@@ -326,22 +330,13 @@ define(function (require, exports, module) {
             _removeGutter(editor._codeMirror);
         }
     }
-   
-    function _saveFolds(event) {
-        //save the state of open documents in the editor
-        var editor = EditorManager.getCurrentFullEditor();
-        if (_extensionEnabled && editor) {
-            _prefs.setValue(editor.document.file.fullPath, _lineFolds);
-        }
-    }
-    
+
     function init() {
         $(DocumentManager).on("currentDocumentChange", function () {
             var current = EditorManager.getCurrentFullEditor();
             if (_extensionEnabled) {
                 if (previousEditor) {
                     _deregisterHandlers(previousEditor);
-                    _prefs.setValue(previousEditor.document.file.fullPath, _lineFolds);
                 }
                 previousEditor = current;
             } else {
@@ -349,21 +344,26 @@ define(function (require, exports, module) {
                 _removeGutter(current._codeMirror);
             }
         });
-        
+
+        function _doSave() {
+            var editor = EditorManager.getCurrentFullEditor();
+            saveLineFolds(editor);
+        }
+
         $(EditorManager).on("activeEditorChange", _handleActiveEditorChange);
-        //save any other folds just before the project closes
-        $(ProjectManager).on("beforeProjectClose", _saveFolds);
-        $(ProjectManager).on("beforeAppClose", _saveFolds);
+        $(ProjectManager).on("beforeProjectClose", _doSave);
+        $(ProjectManager).on("beforeAppClose", _doSave);
+
         //Load stylesheet
         ExtensionUtils.loadStyleSheet(module, "main.less");
-        
+
         CommandManager.register("Enable Code Folding", CODE_FOLD_EXT, _toggleExtension);
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLD_EXT);
         CommandManager.get(CODE_FOLD_EXT).setChecked(_extensionEnabled);
-        
+
         CommandManager.register("Collapse All", COLLAPSE_ALL, collapseAll);
         CommandManager.register("Expand All", EXPAND_ALL, expandAll);
     }
-    
+
     init();
 });
