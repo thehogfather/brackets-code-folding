@@ -102,20 +102,22 @@ define(function (require, exports, module) {
 
     function _getCollapsibleLines(cm, rangeFinder, from, to) {
         var lines = [], i, f = function (m) {return m.__isFold; };
-        for (i = from; i <= to; i++) {
-            //find out if the line is folded so no need to loop through
-            var marks, skip = 0, j, foldRange;
-            marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
-            foldRange = rangeFinder.canFold(cm, i);
-            if (foldRange) {
-                lines.push(i);
-                if (marks && marks.length > 0) {
-                    i += (marks[0].lines.length - 1);
-                }
-            } else {
-                var lI = cm.lineInfo(i);
-                if (lI && lI.gutterMarkers) {
-                    _removeMarker(cm, i);
+        if (rangeFinder) {
+            for (i = from; i <= to; i++) {
+                //find out if the line is folded so no need to loop through
+                var marks, skip = 0, j, foldRange;
+                marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
+                foldRange = rangeFinder.canFold(cm, i);
+                if (foldRange) {
+                    lines.push(i);
+                    if (marks && marks.length > 0) {
+                        i += (marks[0].lines.length - 1);
+                    }
+                } else {
+                    var lI = cm.lineInfo(i);
+                    if (lI && lI.gutterMarkers) {
+                        _removeMarker(cm, i);
+                    }
                 }
             }
         }
@@ -347,7 +349,9 @@ define(function (require, exports, module) {
 
         function _doSave() {
             var editor = EditorManager.getCurrentFullEditor();
-            saveLineFolds(editor);
+            if (editor) {
+                saveLineFolds(editor);
+            }
         }
 
         $(EditorManager).on("activeEditorChange", _handleActiveEditorChange);
