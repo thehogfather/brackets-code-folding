@@ -50,7 +50,7 @@ define(function (require, exports, module) {
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
         _foldMarker             = "\u2194",
-        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php"],
+        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php", ".scss"],
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm"],
         scrollInterval,
         changeInterval,
