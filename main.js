@@ -165,10 +165,14 @@ define(function (require, exports, module) {
         editor = editor || EditorManager.getCurrentFullEditor();
         var rangeFinder = getRangeFinder(editor.document);
         var i, collapsibleLines = _getCollapsibleLines(cm, rangeFinder, from, to);
-        collapsibleLines.forEach(function (line) {
-            _renderLineFoldMarkers(cm, line);
-        });
-        //draw inline fold marks if any
+        for (i = from; i <= to; i++) {
+            if (collapsibleLines.indexOf(i) > -1) {
+                _renderLineFoldMarkers(cm, i);
+            } else {
+                cm.setGutterMarker(i, "code-folding-gutter", document.createElement("div"));
+            }
+        }
+       //draw inline fold marks if any
         var inlineEds = EditorManager.getInlineEditors(editor);
         inlineEds.forEach(function (ed) {
             _decorateGutters(ed._codeMirror, ed.getFirstVisibleLine(), ed.getLastVisibleLine(), ed);
