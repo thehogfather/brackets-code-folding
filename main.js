@@ -82,10 +82,6 @@ define(function (require, exports, module) {
         return _createMarker(_collapsedChar, "codefolding-collapsed");
     }
 
-    function _removeMarker(cm, lineNum) {
-        cm.setGutterMarker(lineNum, "code-folding-gutter", null);
-    }
-
     function _createExpandedMarker(lineNum) {
         return _createMarker(_expandedChar, "codefolding-expanded");
     }
@@ -109,15 +105,12 @@ define(function (require, exports, module) {
                 marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
                 foldRange = rangeFinder.canFold(cm, i);
                 if (foldRange) {
-                    lines.push(i);
+                    lines.push({num: i, collapsible: true});
                     if (marks && marks.length > 0) {
                         i += (marks[0].lines.length - 1);
                     }
                 } else {
-                    var lI = cm.lineInfo(i);
-                    if (lI && lI.gutterMarkers) {
-                        _removeMarker(cm, i);
-                    }
+                    lines.push({num: i, collapsible: false});
                 }
             }
         }
@@ -165,14 +158,14 @@ define(function (require, exports, module) {
         editor = editor || EditorManager.getCurrentFullEditor();
         var rangeFinder = getRangeFinder(editor.document);
         var i, collapsibleLines = _getCollapsibleLines(cm, rangeFinder, from, to);
-        for (i = from; i <= to; i++) {
-            if (collapsibleLines.indexOf(i) > -1) {
-                _renderLineFoldMarkers(cm, i);
+        collapsibleLines.forEach(function (line, i) {
+            if (line.collapsible) {
+                _renderLineFoldMarkers(cm, line.num);
             } else {
-                cm.setGutterMarker(i, "code-folding-gutter", document.createElement("div"));
+                cm.setGutterMarker(line.num, "code-folding-gutter", document.createElement("div"));
             }
-        }
-       //draw inline fold marks if any
+        });
+        //draw inline fold marks if any
         var inlineEds = EditorManager.getInlineEditors(editor);
         inlineEds.forEach(function (ed) {
             _decorateGutters(ed._codeMirror, ed.getFirstVisibleLine(), ed.getLastVisibleLine(), ed);
@@ -185,9 +178,9 @@ define(function (require, exports, module) {
             var rangeFinder = getRangeFinder(editor.document);
             var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
-            lines.forEach(function (line) {
-                _foldLine(editor._codeMirror, line, foldFunc);
-                _renderLineFoldMarkers(editor._codeMirror, line);
+            lines.filter(function (line) {return line.collapsible; }).forEach(function (line) {
+                _foldLine(editor._codeMirror, line.num, foldFunc);
+                _renderLineFoldMarkers(editor._codeMirror, line.num);
             });
         }
     }
@@ -198,15 +191,15 @@ define(function (require, exports, module) {
             var rangeFinder = getRangeFinder(editor.document);
             var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
-            lines.forEach(function (line) {
-                _expandLine(editor._codeMirror, line, foldFunc);
-                _renderLineFoldMarkers(editor._codeMirror, line);
+            lines.filter(function (line) { return line.collapsible; }).forEach(function (line) {
+                _expandLine(editor._codeMirror, line.num, foldFunc);
+                _renderLineFoldMarkers(editor._codeMirror, line.num);
             });
         }
     }
 
     function _handleScroll(cm, from, to) {
-        function doScroll() {
+		function doScroll() {
             _decorateGutters(cm, from, to);
         }
 
@@ -223,7 +216,7 @@ define(function (require, exports, module) {
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
             var range = foldFunc(cm, n);
             if (range) {
-                _decorateGutters(cm, range.from.line, Math.max(range.to.line, vp.to));
+                _decorateGutters(cm, range.from.line, range.to.line);
             }
         }
     }
