@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         EditorManager           = brackets.getModule("editor/EditorManager"),
         ProjectManager          = brackets.getModule("project/ProjectManager"),
         PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
+        KeyBindingManager       = brackets.getModule("command/KeyBindingManager"),
         Menus                   = brackets.getModule("command/Menus"),
         KeyEvent                = brackets.getModule("utils/KeyEvent"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
@@ -45,6 +46,8 @@ define(function (require, exports, module) {
         _prefs                  = PreferencesManager.getPreferenceStorage(module),
         CODE_FOLD_EXT           = "javascript.code.folding",
         COLLAPSE_ALL            = "code.collapse.all",
+        COLLAPSE                = "codefolding.collapse",
+        EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "code.expand.all",
         _extensionEnabled       = true,
         _expandedChar           = "\u25bc",
@@ -116,8 +119,7 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-
-
+    
     function _renderLineFoldMarkers(cm, line) {
         var lineMark;
         if (_isFolded(cm, line)) {
@@ -133,7 +135,6 @@ define(function (require, exports, module) {
             cm.setGutterMarker(line, "code-folding-gutter", lineMark);
         }
     }
-
 
     /**
      * Utility function to fold a line if it is not already folded
@@ -330,6 +331,39 @@ define(function (require, exports, module) {
         }
     }
 
+    function collapseCurrent() {
+        console.log("collapse current");
+        var editor = EditorManager.getFocusedEditor();
+        if (editor) {
+            var cursor = editor.getCursorPos(), i, rangeFinder = getRangeFinder(editor.document),
+                cm = editor._codeMirror, range;
+            var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+            if (rangeFinder) {
+                //move cursor up until a collapsible line is found
+                for (i = cursor.line; i > 0; i--) {
+                    range = rangeFinder.canFold(cm, i);
+                    if (range) {
+                        _foldLine(cm, i, foldFunc);
+                        editor.setCursorPos(i);
+                        return;
+                    }
+                }
+            }
+           
+        }
+    }
+    
+    function expandCurrent() {
+        console.log("expand current");
+        var editor = EditorManager.getFocusedEditor();
+        if (editor) {
+            var cursor = editor.getCursorPos(), cm = editor._codeMirror, rangeFinder = getRangeFinder(editor.document);
+            var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
+            console.log(cursor);
+            _expandLine(cm, cursor.line, foldFunc);
+        }
+    }
+    
     function init() {
         $(DocumentManager).on("currentDocumentChange", function () {
             var current = EditorManager.getCurrentFullEditor();
@@ -364,6 +398,12 @@ define(function (require, exports, module) {
 
         CommandManager.register("Collapse All", COLLAPSE_ALL, collapseAll);
         CommandManager.register("Expand All", EXPAND_ALL, expandAll);
+        
+        CommandManager.register("Collapse Current", COLLAPSE, collapseCurrent);
+        CommandManager.register("Expand Current", EXPAND, expandCurrent);
+        
+        KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt--");
+        KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-=");
     }
 
     init();
