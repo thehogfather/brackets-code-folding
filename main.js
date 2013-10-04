@@ -62,6 +62,16 @@ define(function (require, exports, module) {
     var _commentOrString = /^(comment|string)/;
     CodeMirror.newFoldFunction  = require("cmFoldFunction");
 
+    /**
+     * file extension adapter to retain compatibility with earlier bracket sprints
+     */
+    function getFileExtension(fullPath) {
+        if (FileUtils.getFileExtension) {
+            return FileUtils.getFileExtension(fullPath);
+        } else {
+            return FileUtils.getFilenameExtension(fullPath);
+        }
+    }
     function _isFolded(cm, line) {
         var marks = cm.findMarksAt(CodeMirror.Pos(line + 1, 0));
         return marks ? marks.some(function (m) {return m.__isFold; }) : false;
@@ -91,7 +101,7 @@ define(function (require, exports, module) {
 
     function getRangeFinder(doc) {
         //return the appropriate folding function based on the file that was opened
-        var ext = FileUtils.getFilenameExtension(doc.file.fullPath);
+        var ext = getFileExtension(doc.file.fullPath);
         if (_braceCollapsibleExtensions.indexOf(ext) > -1) {
             return braceRangeFinder;
         } else if (_tagCollapsibleExtensions.indexOf(ext) > -1) {
@@ -119,7 +129,7 @@ define(function (require, exports, module) {
         }
         return lines;
     }
-    
+
     function _renderLineFoldMarkers(cm, line) {
         var lineMark;
         if (_isFolded(cm, line)) {
@@ -200,7 +210,7 @@ define(function (require, exports, module) {
     }
 
     function _handleScroll(cm, from, to) {
-		function doScroll() {
+        function doScroll() {
             _decorateGutters(cm, from, to);
         }
 
@@ -306,7 +316,7 @@ define(function (require, exports, module) {
                 //update the context menu to only allow foldall and collapseall in css or less files
                 Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(COLLAPSE_ALL);
                 Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(EXPAND_ALL);
-                var ext = FileUtils.getFilenameExtension(current.document.file.fullPath);
+                var ext = getFileExtension(current.document.file.fullPath);
                 if ([".css", ".less"].indexOf(ext) > -1) {
                     Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(COLLAPSE_ALL);
                     Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addMenuItem(EXPAND_ALL);
@@ -349,10 +359,10 @@ define(function (require, exports, module) {
                     }
                 }
             }
-           
+
         }
     }
-    
+
     function expandCurrent() {
         console.log("expand current");
         var editor = EditorManager.getFocusedEditor();
@@ -363,7 +373,7 @@ define(function (require, exports, module) {
             _expandLine(cm, cursor.line, foldFunc);
         }
     }
-    
+
     function init() {
         $(DocumentManager).on("currentDocumentChange", function () {
             var current = EditorManager.getCurrentFullEditor();
@@ -398,10 +408,10 @@ define(function (require, exports, module) {
 
         CommandManager.register("Collapse All", COLLAPSE_ALL, collapseAll);
         CommandManager.register("Expand All", EXPAND_ALL, expandAll);
-        
+
         CommandManager.register("Collapse Current", COLLAPSE, collapseCurrent);
         CommandManager.register("Expand Current", EXPAND, expandCurrent);
-        
+
         KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt--");
         KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-=");
     }
