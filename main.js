@@ -67,7 +67,7 @@ define(function (require, exports, module) {
      */
     function getFileExtension(fullPath) {
         if (FileUtils.getFileExtension) {
-            return FileUtils.getFileExtension(fullPath);
+            return "." + FileUtils.getFileExtension(fullPath);
         } else {
             return FileUtils.getFilenameExtension(fullPath);
         }
