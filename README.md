@@ -4,6 +4,8 @@ Peforms code folding based on brace ({}, []) matching and multiline comments for
 
 Supports quickly collapsing and expanding all code regions for .css and .less files through context menu items.
 
+Alt-Clicking on code regions collapses or expands all foldable child regions (as found in OSX Finder).
+
 ### How to install
 Navigate to **Brackets > File > Install Extension** and paste url https://github.com/thehogfather/brackets-code-folding
 
