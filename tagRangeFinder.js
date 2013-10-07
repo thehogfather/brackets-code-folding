@@ -11,16 +11,30 @@ define(function (require, exports, module) {
     var util                = require("./util"),
         addProp             = util.addProp,
         copy                = util.copy;
-        
-    function _processLine(lineText, tagsStack, openTag) {
+
+    function _processLine(cm, line, tagsStack, openTag) {
+        var lineText = cm.getLine(line);
         var startTagMatches = util.matchAll(startTagRegex, lineText)
-            .map(addProp("tagType", "open")), startTag;
+            .map(addProp("tagType", "open"))
+            .map(addProp("line", line)), startTag;
         var endTagMatches = util.matchAll(endTagRegex, lineText)
-            .map(addProp("tagType", "close")), endTag;
+            .map(addProp("tagType", "close"))
+            .map(addProp("line", line)), endTag;
+
+        function _ignoreTag(tag) {
+            var token = cm.getTokenAt(CodeMirror.Pos(tag.line, tag.index + tag.matches[1].length));
+            //ignore tags in the context of a comment
+            if (token.type && token.type === "comment") {
+                return true;
+            }
+            return false;
+        }
+
         var allTags = startTagMatches.concat(endTagMatches)
-            .sort(function (a, b) { return a.index - b.index; });
+            .sort(function (a, b) { return a.index - b.index; })
+            .filter(function (tag) { return !_ignoreTag(tag); });
         var i, tag, stackCopy;
-        
+
         tagsStack = tagsStack || [];
         for (i = 0; i < allTags.length; i++) {
             tag = allTags[i];
@@ -52,28 +66,28 @@ define(function (require, exports, module) {
                 }
             }
         }
-       
+
         if (!openTag && tagsStack && tagsStack.length) {
             openTag = tagsStack[0];
         }
         return {openTag: openTag, stack: tagsStack, endTag: tag};
     }
-    
+
     function rangeFinder(cm, start) {
-        var lineText, startLineText = cm.getLine(start.line), endTag;
-        var lineRes = _processLine(startLineText), stack = lineRes.stack, openTag = lineRes.openTag;
-        
+        var lineText, endTag;
+        var lineRes = _processLine(cm, start.line), stack = lineRes.stack, openTag = lineRes.openTag;
+
         if (!stack || stack.length === 0) { //no match was found on line or tag was closed on line
             return;
         } else {
             //keep looking to the end of the file until you find it :S
             var lineCount = cm.lineCount(), i;
-            
+
             for (i = start.line + 1; i < lineCount; i++) {
                 lineText = cm.getLine(i);
                 if (lineText.trim().length !== 0) {//skip blanks
-                
-                    lineRes = _processLine(lineText, stack, openTag);
+
+                    lineRes = _processLine(cm, i, stack, openTag);
                     stack = lineRes.stack;
                     if (stack && stack.length === 0) {
                         endTag = lineRes.endTag;
@@ -86,12 +100,12 @@ define(function (require, exports, module) {
                     }
                 }
             }
-            
+
             return;
         }
-        
+
     }
-    
+
     module.exports = {
         rangeFinder: rangeFinder,
         canFold: function (cm, lineNum) {
@@ -99,5 +113,5 @@ define(function (require, exports, module) {
             return range;
         }
     };
-    
+
 });
