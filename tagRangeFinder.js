@@ -7,7 +7,7 @@
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
-    var startTagRegex = /\s*(<(\w|[\.\_\-\:])+\s*[^>]*?>)/g, endTagRegex = /\s*(<\/(\w|[\.\_\-\:])+>)\s*/g;
+    var startTagRegex = /\s*(<((:?\w|[\.\_\-\:])+)\s*[^>]*?>)/g, endTagRegex = /\s*(<\/((:?\w|[\.\_\-\:])+)\s*>)/g;
     var util                = require("./util"),
         addProp             = util.addProp,
         copy                = util.copy;
