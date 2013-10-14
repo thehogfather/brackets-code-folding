@@ -45,10 +45,10 @@ define(function (require, exports, module) {
         tagRangeFinder          = require("tagRangeFinder"),
         _prefs                  = PreferencesManager.getPreferenceStorage(module),
         CODE_FOLD_EXT           = "javascript.code.folding",
-        COLLAPSE_ALL            = "code.collapse.all",
+        COLLAPSE_ALL            = "codefolding.collapse.all",
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
-        EXPAND_ALL              = "code.expand.all",
+        EXPAND_ALL              = "codefolding.expand.all",
         _extensionEnabled       = true,
         _expandedChar           = "\u25bc",
         _collapsedChar          = "\u25b6",
@@ -380,6 +380,7 @@ define(function (require, exports, module) {
                     range = rangeFinder.canFold(cm, i);
                     if (range) {
                         _foldLine(cm, i, foldFunc);
+                        _renderLineFoldMarkers(editor._codeMirror, i);
                         editor.setCursorPos(i);
                         return;
                     }
@@ -440,6 +441,9 @@ define(function (require, exports, module) {
 
         KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt--");
         KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-=");
+        KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-+");
+        KeyBindingManager.addBinding(COLLAPSE_ALL, "Alt-1");
+        KeyBindingManager.addBinding(EXPAND_ALL, "Shift-Alt-1");
     }
 
     init();

@@ -15,6 +15,12 @@ Navigate to **Brackets > File > Install Extension** and paste url https://github
 3. Restart or Reload Brackets
 4. Toggle the extension with  **Brackets > View > Enable Code Folding**
 
+### Shortcuts
+    Ctrl-Alt-- Collapse code region at current cursor position
+    Ctrl-Alt-+ Expand code region at current cursor position
+    Alt-1 Collapse all code region in current editor
+    Shift-Alt-1 Expand all code region in current editor
+
 ### License
 MIT-licensed.
 
