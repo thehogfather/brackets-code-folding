@@ -337,7 +337,11 @@ define(function (require, exports, module) {
     function _handleActiveEditorChange(event, current, previous) {
         if (_extensionEnabled) {
             if (current) {
-                restoreLineFolds(current);
+                //no need to restore folds for editors that  have already been opened
+                if (current._codeMirror && current._codeMirror.getOption("gutters").indexOf("code-folding-gutter") < 0) {
+                    restoreLineFolds(current);
+                }
+              
                 _registerHandlers(current);
                 //update the context menu to only allow foldall and collapseall in css or less files
                 Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).removeMenuItem(COLLAPSE_ALL);
