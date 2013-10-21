@@ -253,8 +253,6 @@ define(function (require, exports, module) {
                 }
                 _decorateGutters(cm, range.from.line, range.to.line);
             }
-
-
         }
     }
 
@@ -302,10 +300,13 @@ define(function (require, exports, module) {
             $(doc).on("change", _handleDocumentChange);
             cm.on("gutterClick", _handleGutterClick);
             cm.on("viewportChange", _handleScroll);
+            //hack to reduce performance bottleneck when decorate gutter is called for the first time on largish documents
             setTimeout(function () {
                 var vp = cm.getViewport();
-                _decorateGutters(cm, Math.max(vp.from, editor.getFirstVisibleLine()),
-                                 Math.min(vp.to, editor.getLastVisibleLine()), editor);
+                if (editor.getLastVisibleLine() - editor.getFirstVisibleLine() < 100) {
+                    _decorateGutters(cm, Math.max(vp.from, editor.getFirstVisibleLine()),
+                        Math.min(vp.to, editor.getLastVisibleLine()), editor);
+                }
             }, 250);
         }
     }
