@@ -42,12 +42,12 @@ define(function (require, exports, module) {
             widget.className = "CodeMirror-foldmarker";
         }
     
-        return function (cm, pos) {
+        return function (cm, pos, range) {
             if (typeof pos === "number") {
                 pos = CodeMirror.Pos(pos, 0);
             }
     
-            var present = cm.findMarksAt({line: pos.line + 1, ch: 0}), cleared = 0, i, range;
+            var present = cm.findMarksAt({line: pos.line + 1, ch: 0}), cleared = 0, i;
             for (i = 0; i < present.length; ++i) {
                 if (present[i].__isFold) {
                     ++cleared;
@@ -58,7 +58,7 @@ define(function (require, exports, module) {
                 return;
             }
             
-            range = rangeFinder(cm, pos);
+            range = range || rangeFinder(cm, pos);
             
             if (!range) {
                 return;

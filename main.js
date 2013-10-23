@@ -57,7 +57,8 @@ define(function (require, exports, module) {
         _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm", ".tpl", ".tmpl"],
         scrollInterval,
         changeInterval,
-        previousEditor;
+        previousEditor,
+        _lineFolds = {};
 
     var _commentOrString = /^(comment|string)/;
     CodeMirror.newFoldFunction  = require("cmFoldFunction");
@@ -118,22 +119,28 @@ define(function (require, exports, module) {
         @param searchFolds set to true if folded code regions should be searched for foldable lines
      */
     function _getCollapsibleLines(cm, rangeFinder, from, to, searchFolds) {
-        var lines = [], i, f = function (m) {return m.__isFold; };
+        var lines = [], i, f = function (m) {return m.__isFold; }, _focusedEd = EditorManager.getFocusedEditor(),
+            _editorLineFolds = _focusedEd ? _lineFolds[_focusedEd.document.file.fullPath] : undefined;
         if (rangeFinder) {
             for (i = from; i <= to; i++) {
                 //find out if the line is folded so no need to loop through
-                var marks, skip = 0, j, foldRange;
-                marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
-                foldRange = rangeFinder.canFold(cm, i);
+                var marks, skip = 0, j, foldRange, _foldSpec;
+                //get the foldrange from cache if possible
+                foldRange = _editorLineFolds && _editorLineFolds[i] && _editorLineFolds[i].collapsible !== undefined ? _editorLineFolds[i].range
+                    : rangeFinder.canFold(cm, i);
                 if (foldRange) {
-                    lines.push({num: i, collapsible: true});
+                    _foldSpec = {num: i, collapsible: true, range: foldRange};
+                    marks = cm.findMarksAt(CodeMirror.Pos(i + 1, 0)).filter(f);
                     //skip the folded region if we are not searching inside folded code [default] and we are on a folded line
                     if (!searchFolds && marks && marks.length > 0) {
                         i += (marks[0].lines.length - 1);
                     }
                 } else {
-                    lines.push({num: i, collapsible: false});
+                    _foldSpec = {num: i, collapsible: false};
                 }
+                
+                lines.push(_foldSpec);
+                _editorLineFolds[i] = _foldSpec;
             }
         }
         return lines;
@@ -158,15 +165,15 @@ define(function (require, exports, module) {
     /**
      * Utility function to fold a line if it is not already folded
      */
-    function _foldLine(cm, line, foldFunc) {
+    function _foldLine(cm, line, foldFunc, range) {
         if (!_isFolded(cm, line)) {
-            foldFunc(cm, line);
+            foldFunc(cm, line, range);
         }
     }
     //expands a line if not already expanded
-    function _expandLine(cm, line, foldFunc) {
+    function _expandLine(cm, line, foldFunc, range) {
         if (_isFolded(cm, line)) {
-            foldFunc(cm, line);
+            foldFunc(cm, line, range);
         }
     }
 
@@ -199,7 +206,7 @@ define(function (require, exports, module) {
             var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
             lines.filter(function (line) {return line.collapsible; }).forEach(function (line) {
-                _foldLine(editor._codeMirror, line.num, foldFunc);
+                _foldLine(editor._codeMirror, line.num, foldFunc, line.range);
                 _renderLineFoldMarkers(editor._codeMirror, line.num);
             });
         }
@@ -212,7 +219,7 @@ define(function (require, exports, module) {
             var lines = _getCollapsibleLines(editor._codeMirror, rangeFinder, editor.getFirstVisibleLine(), editor.getLastVisibleLine());
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
             lines.filter(function (line) { return line.collapsible; }).forEach(function (line) {
-                _expandLine(editor._codeMirror, line.num, foldFunc);
+                _expandLine(editor._codeMirror, line.num, foldFunc, line.range);
                 _renderLineFoldMarkers(editor._codeMirror, line.num);
             });
         }
@@ -232,10 +239,12 @@ define(function (require, exports, module) {
     function _handleGutterClick(cm, n, gutterId, event) {
         if (gutterId === "code-folding-gutter" && cm.lineInfo(n).gutterMarkers) {
             var rangeFinder = getRangeFinder(EditorManager.getActiveEditor().document);
+            var _editorLineFolds = _lineFolds[EditorManager.getActiveEditor().document.file.fullPath];
             var vp = cm.getViewport();
             var foldFunc = CodeMirror.newFoldFunction(rangeFinder.rangeFinder, _foldMarker, _renderLineFoldMarkers);
-            var range = rangeFinder.canFold(cm, n), folded = _isFolded(cm, n);
+            var range = _editorLineFolds && _editorLineFolds[n] ? _editorLineFolds[n].range : rangeFinder.canFold(cm, n);
             if (range) {
+                var folded = _isFolded(cm, n);
                 //if the alt key was pressed, collapse or expand all children of this range
                 if (event.altKey) {
                     var childLines = _getCollapsibleLines(cm, rangeFinder, range.from.line, range.to.line, true);
@@ -243,15 +252,16 @@ define(function (require, exports, module) {
                         .reverse()
                         .forEach(function (line) {
                             if (folded) {
-                                _expandLine(cm, line.num, foldFunc);
+                                _expandLine(cm, line.num, foldFunc, line.range);
                             } else {
-                                _foldLine(cm, line.num, foldFunc);
+                                _foldLine(cm, line.num, foldFunc, line.range);
                             }
+                            _renderLineFoldMarkers(cm, line.num);
                         });
                 } else {
-                    foldFunc(cm, n);
+                    foldFunc(cm, n, range);
+                    _renderLineFoldMarkers(cm, n);
                 }
-                _decorateGutters(cm, range.from.line, range.to.line);
             }
         }
     }
@@ -261,6 +271,11 @@ define(function (require, exports, module) {
         if (cm) {
             clearInterval(changeInterval);
             changeInterval = setTimeout(function () {
+                var vp = cm.getViewport();
+                var i = vp.from;//invalidate the cached range in the viewport so that they are recalculated on next decoration
+                for (i; i < vp.to; i++) {
+                    _lineFolds[EditorManager.getFocusedEditor().document.file.fullPath][i] = {};
+                }
                 _decorateGutters(cm, changeList.from.line, changeList.to.line);
             }, 250);
         }
@@ -326,7 +341,7 @@ define(function (require, exports, module) {
     }
 
     function saveLineFolds(editor) {
-        var folds = [], i = 0;
+        var folds = [], i = 0;//remember to save the fold ranges
         for (i = 0; i < editor.lineCount(); i++) {
             if (_isFolded(editor._codeMirror, i)) {
                 folds.push(i);
@@ -338,6 +353,7 @@ define(function (require, exports, module) {
     function _handleActiveEditorChange(event, current, previous) {
         if (_extensionEnabled) {
             if (current) {
+                _lineFolds[current.document.file.fullPath] = _lineFolds[current.document.file.fullPath] || {};
                 //no need to restore folds for editors that  have already been opened
                 if (current._codeMirror && current._codeMirror.getOption("gutters").indexOf("code-folding-gutter") < 0) {
                     restoreLineFolds(current);
@@ -374,7 +390,7 @@ define(function (require, exports, module) {
 
     function collapseCurrent() {
         console.log("collapse current");
-        var editor = EditorManager.getFocusedEditor();
+        var editor = EditorManager.getFocusedEditor(), _editorLineFolds = editor && editor.document ? _lineFolds[editor.document.file.fullPath] : undefined;
         if (editor) {
             var cursor = editor.getCursorPos(), i, rangeFinder = getRangeFinder(editor.document),
                 cm = editor._codeMirror, range;
@@ -382,9 +398,9 @@ define(function (require, exports, module) {
             if (rangeFinder) {
                 //move cursor up until a collapsible line is found
                 for (i = cursor.line; i > 0; i--) {
-                    range = rangeFinder.canFold(cm, i);
+                    range = _editorLineFolds && _editorLineFolds[i].collapsible !== undefined ? _editorLineFolds[i].range : rangeFinder.canFold(cm, i);
                     if (range) {
-                        _foldLine(cm, i, foldFunc);
+                        _foldLine(cm, i, foldFunc, range);
                         _renderLineFoldMarkers(editor._codeMirror, i);
                         editor.setCursorPos(i);
                         return;
