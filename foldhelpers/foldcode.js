@@ -10,9 +10,9 @@ define(function (require, exports, module) {
     module.exports = function () {
         function doFold(cm, pos, options, force) {
             var finder = options && (options.call ? options : options.rangeFinder);
+            if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
             if (!finder) { finder = cm.getHelper(pos, "fold"); }
             if (!finder) { return; }
-            if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
             var minSize = (options && options.minFoldSize) || 1;
 
             function getRange(allowFolded) {

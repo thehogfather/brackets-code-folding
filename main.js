@@ -20,18 +20,18 @@ define(function (require, exports, module) {
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
-        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php", ".scss"],
-        _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm", ".tpl", ".tmpl"],
+//        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php", ".scss"],
+//        _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm", ".tpl", ".tmpl"],
         _lineFolds = {};
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
     ///load cm folding code
-    require("new/foldcode")();
-    require("new/foldgutter")();
-    var braceFold = require("new/brace-fold"),
-        commentFold = require("new/comment-fold"),
-        xmlFold =   require("new/xml-fold"),
-        indentFold = require("new/indent-fold");
+    require("foldhelpers/foldcode")();
+    require("foldhelpers/foldgutter")();
+    var braceFold = require("foldhelpers/brace-fold"),
+        commentFold = require("foldhelpers/comment-fold"),
+        xmlFold =   require("foldhelpers/xml-fold"),
+        indentFold = require("foldhelpers/indent-fold");
 
     CodeMirror.registerHelper("fold", "brace", braceFold);
     CodeMirror.registerHelper("fold", "comment", commentFold);
@@ -57,20 +57,17 @@ define(function (require, exports, module) {
     function restoreLineFolds(editor) {
         var cm = editor._codeMirror, rangeFinder, foldFunc;
         if (!cm) {return; }
-        var path = editor.document.file.fullPath;
-        var folds = getLineFolds(path);
+        var path = editor.document.file.fullPath, keys;
+        var folds = getLineFolds(path), vp = cm.getViewport();
         if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
             folds.forEach(function (line) {
                 cm.foldCode(line);
             });
-        } else if (folds) {
+        } else if (folds && (keys = Object.keys(folds)).length) {
             var i, range;
-            for (i = 0; i < editor.lineCount(); i++) {
-                range = folds[i];
-                if (range) {
-                    cm.foldCode(i, {range: range});
-                }
-            }
+            keys.forEach(function (lineNumber) {
+                cm.foldCode(+lineNumber, {range: folds[lineNumber]});
+            });
         }
     }
     
@@ -117,7 +114,7 @@ define(function (require, exports, module) {
             var cursor = editor.getCursorPos(), i;
             if (opts.rangeFinder) {
                 //move cursor up until a collapsible line is found
-                for (i = cursor.line; i > 0; i--) {
+                for (i = cursor.line; i >= 0; i--) {
                     opts.range = _editorLineFolds && _editorLineFolds[i] ? _editorLineFolds[i] : opts.rangeFinder(cm, CodeMirror.Pos(i));
                     if (opts.range) {
                         cm.foldCode(i, opts);
@@ -165,14 +162,14 @@ define(function (require, exports, module) {
             }
         }
     }
-        
-    $(EditorManager).on("activeEditorChange", function (event, current, previous) {
-        if (current) {
+    
+    function onActiveEditorChanged(event, current, previous) {
+        if (current && current._codeMirror.getOption("gutters").indexOf("CodeMirror-foldgutter") === -1) {
             var cm = current._codeMirror, path = current.document.file.fullPath;
             _lineFolds[path] = _lineFolds[path] || {};
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
             cm.setOption("foldGutter", {
-                rangeFinder: new CodeMirror.fold.combine(CodeMirror.fold.brace, CodeMirror.fold.comment),
+                rangeFinder: new CodeMirror.fold.combine(CodeMirror.fold.brace, CodeMirror.fold.comment, CodeMirror.fold.xml),
                 onGutterClick: onGutterClick
             });
             cm.on("fold", function (cm, from, to) {
@@ -188,7 +185,9 @@ define(function (require, exports, module) {
         if (previous) {
             saveLineFolds(previous);
         }
-    });
+    }
+    
+    $(EditorManager).on("activeEditorChange", onActiveEditorChanged);
     
     $(ProjectManager).on("beforeProjectClose", function () {
         saveLineFolds(EditorManager.getCurrentFullEditor());
