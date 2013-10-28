@@ -4,7 +4,7 @@
     "description": "Brackets extension that provides simple code folding for css, less, json, javascript, xml and html files.",
     "keywords": [".js", ".json", "code folding", "code collapsing", ".html", ".xml", ".htm", ".php", ".css", ".less"],
     "categories": ["formatting", "general", "editing", "visual"],
-    "engines": ">=23",
+    "engines": ">=32",
     "contributors": [
         {"name": "Patrick Oladimeji", "email": "thehogfather@dustygem.co.uk", "url": "https://github.com/thehogfather"},
         {"name": "Daniel Glazman", "email": "daniel@glazman.org"}
