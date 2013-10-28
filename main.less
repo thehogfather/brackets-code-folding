@@ -1,18 +1,19 @@
-.cm-thehogfather-codefolding {
-    color: #777;
+.CodeMirror-foldgutter-open:after {
+  content: "\25bc";
+    font-size: 15px;
+}
+.CodeMirror-foldgutter-folded:after {
+  content: "\25b6";
     font-size: 15px;
 }
 
-.cm-s-default .codefolding-collapsed {
-    .cm-thehogfather-codefolding;
+.CodeMirror-foldgutter {
+    width: .7em;   
 }
 
-.cm-s-default .codefolding-expanded {
-    .cm-thehogfather-codefolding;
-}
-
-.CodeMirror-gutter.code-folding-gutter {
-    width: 10px;
+.CodeMirror-foldgutter .CodeMirror-foldgutter-open, .CodeMirror-foldgutter .CodeMirror-foldgutter-folded {
+    color: #777;
+    cursor: pointer;
 }
 
 .CodeMirror-foldmarker {
@@ -23,4 +24,5 @@
     margin-right: 3px;
     margin-left: 3px;
     border-radius: 5px;
+    cursor: pointer;
 }
