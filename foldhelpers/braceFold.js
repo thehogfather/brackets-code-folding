@@ -1,13 +1,14 @@
 /**
- * Brace range finder
+ * Brace fold helper
  * @author Patrick Oladimeji
- * @date 4/24/13 18:02:50 PM
+ * @date 10/23/13 9:36:36 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror*/
+/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
-    var util                = require("./util"),
+    
+    var util                = require("../util"),
         addProp             = util.addProp,
         _matchAll           = util.matchAll,
         copy                = util.copy;
@@ -117,10 +118,5 @@ define(function (require, exports, module) {
         }
     }
     
-    module.exports = {
-        rangeFinder: rangeFinder,
-        canFold: function (cm, lineNum) {
-            return rangeFinder(cm, pos(lineNum, 1));
-        }
-    };
+    module.exports = rangeFinder;
 });
