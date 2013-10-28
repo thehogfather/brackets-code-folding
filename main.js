@@ -20,9 +20,7 @@ define(function (require, exports, module) {
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
-//        _braceCollapsibleExtensions = [".js", ".css", ".less", ".json", ".php", ".scss"],
-//        _tagCollapsibleExtensions   = [".xml", ".html", ".xhtml", ".htm", ".tpl", ".tmpl"],
-        _lineFolds = {};
+       _lineFolds = {};
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
     ///load cm folding code

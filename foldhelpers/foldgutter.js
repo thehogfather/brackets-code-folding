@@ -1,5 +1,6 @@
 /**
- * 
+ * Based on http://codemirror.net/addon/fold/foldgutter.js
+   Modulised by:
  * @author Patrick Oladimeji
  * @date 10/24/13 10:14:01 AM
  */
@@ -9,9 +10,6 @@ define(function (require, exports, module) {
     "use strict";
 
     module.exports = function () {
-
-        var Pos = CodeMirror.Pos;
-    
         function State(options) {
             this.options = options;
             this.from = this.to = 0;
@@ -26,7 +24,7 @@ define(function (require, exports, module) {
         }
     
         function isFolded(cm, line) {
-            var marks = cm.findMarksAt(Pos(line)), i;
+            var marks = cm.findMarksAt(CodeMirror.Pos(line)), i;
             for (i = 0; i < marks.length; ++i) {
                 if (marks[i].__isFold && marks[i].find().from.line === line) { return true; }
             }
@@ -49,7 +47,7 @@ define(function (require, exports, module) {
                 if (isFolded(cm, cur)) {
                     mark = marker(opts.indicatorFolded);
                 } else {
-                    var pos = Pos(cur, 0), func = opts.rangeFinder || cm.getHelper(pos, "fold");
+                    var pos = CodeMirror.Pos(cur, 0), func = opts.rangeFinder || cm.getHelper(pos, "fold");
                     var range = func && func(cm, pos);
                     if (range && range.from.line + 1 < range.to.line) {
                         mark = marker(opts.indicatorOpen);

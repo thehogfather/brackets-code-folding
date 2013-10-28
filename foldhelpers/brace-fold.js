@@ -3,7 +3,7 @@
  * Slightly modularised by Patrick Oladimeji
  * @date 10/24/13 8:26:34 AM
  */
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, continue: true, eqeq: true*/
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";

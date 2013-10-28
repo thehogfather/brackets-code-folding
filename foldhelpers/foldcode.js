@@ -1,5 +1,6 @@
 /**
- * 
+ * Based on http://codemirror.net/addon/fold/foldcode.js
+   Modulised by:
  * @author Patrick Oladimeji
  * @date 10/28/13 8:41:46 AM
  */

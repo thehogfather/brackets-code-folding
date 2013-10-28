@@ -4,7 +4,7 @@
  * @author Patrick Oladimeji
  * @date 10/24/13 9:47:29 AM
  */
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, eqeq: true, continue: true */
 /*global define, d3, require, $, brackets, window, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
@@ -39,12 +39,17 @@ outer:  for (i = line; i <= lastLine; ++i) {
                 if (nextClose < 0) { nextClose = text.length; }
                 pos = Math.min(nextOpen, nextClose);
                 if (pos === text.length) { break; }
-                if (pos === nextOpen) { ++depth; }
-                else if (!--depth) { end = i; endCh = pos; break outer; }
+                if (pos === nextOpen) {
+                    ++depth;
+                } else if (!--depth) {
+                    end = i;
+                    endCh = pos;
+                    break outer;
+                }
                 ++pos;
             }
         }
-        if (end == null || line == end && endCh == startCh) { return; }
+        if (end == null || (line == end && endCh == startCh)) { return; }
         return {from: CodeMirror.Pos(line, startCh), to: CodeMirror.Pos(end, endCh)};
     };
 

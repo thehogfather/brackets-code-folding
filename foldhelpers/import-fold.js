@@ -3,7 +3,7 @@
  * @author Patrick Oladimeji
  * @date 10/24/13 9:29:23 AM
  */
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, sloppy: true*/
 /*global define, d3, require, $, brackets, window, MouseEvent */
 define(function (require, exports, module) {
     "use strict";
