@@ -48,7 +48,7 @@ define(function (require, exports, module) {
                     range = getRange(false);
                 }
             }
-            if (!range || range.cleared || force === "unfold") { return; }
+            if (!range || range.cleared || force === "unfold" || range.to.line - range.from.line < minSize) { return; }
 
             var myWidget = makeWidget(options);
             var myRange = cm.markText(range.from, range.to, {

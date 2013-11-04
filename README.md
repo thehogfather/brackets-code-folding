@@ -2,9 +2,7 @@
 A code folding extension for [Brackets](https://github.com/adobe/brackets/) based on [CodeMirror's folding addon](http://codemirror.net/demo/folding.html).
 Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has some support for html and xml files based on tag matching.
 
-Supports quickly collapsing and expanding all code regions for .css and .less files through context menu items.
-
-Alt-Clicking on code regions collapses or expands all foldable child regions (as found in OSX Finder).
+Holding down the Alt-key while clicking on code regions collapses or expands all foldable child regions (as found in OSX Finder).
 
 ### How to install
 Navigate to **Brackets > File > Install Extension** and paste url https://github.com/thehogfather/brackets-code-folding
@@ -15,11 +13,11 @@ Navigate to **Brackets > File > Install Extension** and paste url https://github
 3. Restart or Reload Brackets
 4. Toggle the extension with  **Brackets > View > Enable Code Folding**
 
-### Shortcuts
+### Keyboard shortcuts
     Ctrl-Alt-- Collapse code region at current cursor position
     Ctrl-Alt-+ Expand code region at current cursor position
-    Alt-1 Collapse all code region in current editor
-    Shift-Alt-1 Expand all code region in current editor
+    Alt-1 Collapse all code regions in current editor
+    Shift-Alt-1 Expand all code regions in current editor
 
 ### License
 MIT-licensed.

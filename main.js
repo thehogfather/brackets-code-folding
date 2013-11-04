@@ -20,8 +20,8 @@ define(function (require, exports, module) {
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
-       _lineFolds = {};
-    
+		_lineFolds				= {};
+	
     ExtensionUtils.loadStyleSheet(module, "main.less");
     ///load cm folding code
     require("foldhelpers/foldcode")();
@@ -42,11 +42,13 @@ define(function (require, exports, module) {
     function _foldLine(cm, line) {
         if (!cm.isFolded(line)) { cm.foldCode(line); }
     }
+	
     //expands a line if not already expanded
     function _expandLine(cm, line) {
         if (cm.isFolded(line)) { cm.unfoldCode(line); }
     }
     
+	//gets the linefolds saved for the current document in the preference store
     function getLineFolds(path) {
         if (!_prefs.getValue(path)) { _prefs.setValue(path, []); }
         return _prefs.getValue(path);
@@ -80,6 +82,7 @@ define(function (require, exports, module) {
     
     function onGutterClick(cm, line, gutter, event) {
         var opts = cm.state.foldGutter.options;
+		if (opts && opts.range && opts.range.from.line !== line) { opts.range = undefined; }
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
         if (cm.isFolded(line)) {
@@ -93,7 +96,7 @@ define(function (require, exports, module) {
             }
         } else {
             if (event.altKey) {
-                range = _lineFolds[editor.document.file.fullPath][line] || opts.rangeFinder(cm, CodeMirror.Pos(line));
+                range = opts.rangeFinder(cm, CodeMirror.Pos(line));
                 if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
                         cm.foldCode(i, opts);
@@ -104,16 +107,19 @@ define(function (require, exports, module) {
             }
         }
     }
-    
+    /**
+		Collapses the code region nearest the current cursor position. Nearest is found by searching from the current line and moving up the document until an
+		opening code-folding region is found.
+	 */
     function collapseCurrent() {
-        var editor = EditorManager.getFocusedEditor(), _editorLineFolds = editor && editor.document ? _lineFolds[editor.document.file.fullPath] : undefined;
+        var editor = EditorManager.getFocusedEditor();
         if (editor) {
             var cm = editor._codeMirror, opts = cm.state.foldGutter.options;
             var cursor = editor.getCursorPos(), i;
             if (opts.rangeFinder) {
                 //move cursor up until a collapsible line is found
                 for (i = cursor.line; i >= 0; i--) {
-                    opts.range = _editorLineFolds && _editorLineFolds[i] ? _editorLineFolds[i] : opts.rangeFinder(cm, CodeMirror.Pos(i));
+                    opts.range = opts.rangeFinder(cm, CodeMirror.Pos(i));
                     if (opts.range) {
                         cm.foldCode(i, opts);
                         editor.setCursorPos(i);
@@ -123,7 +129,9 @@ define(function (require, exports, module) {
             }
         }
     }
-
+	/**
+		expands the code region at the current cursor position.
+	*/
     function expandCurrent() {
         var editor = EditorManager.getFocusedEditor();
         if (editor) {
@@ -160,10 +168,11 @@ define(function (require, exports, module) {
             }
         }
     }
-    
-    function onActiveEditorChanged(event, current, previous) {
-        if (current && current._codeMirror.getOption("gutters").indexOf("CodeMirror-foldgutter") === -1) {
-            var cm = current._codeMirror, path = current.document.file.fullPath;
+	
+	function registerHandlers(editor) {
+		var cm = editor._codeMirror;
+		if (cm) {
+			var path = editor.document.file.fullPath;
             _lineFolds[path] = _lineFolds[path] || {};
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
             cm.setOption("foldGutter", {
@@ -176,7 +185,12 @@ define(function (require, exports, module) {
             cm.on("unfold", function (cm, from, to) {
                 delete _lineFolds[path][from.line];
             });
-            
+		}
+	}
+    
+    function onActiveEditorChanged(event, current, previous) {
+        if (current && current._codeMirror.getOption("gutters").indexOf("CodeMirror-foldgutter") === -1) {
+			registerHandlers(current);
             restoreLineFolds(current);
         }
         
