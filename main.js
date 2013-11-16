@@ -21,7 +21,6 @@ define(function (require, exports, module) {
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
 		_lineFolds				= {};
-	
     ExtensionUtils.loadStyleSheet(module, "main.less");
     ///load cm folding code
     require("foldhelpers/foldcode")();
@@ -53,7 +52,24 @@ define(function (require, exports, module) {
         if (!_prefs.getValue(path)) { _prefs.setValue(path, []); }
         return _prefs.getValue(path);
     }
-    
+    /** gets the folded regions in the editor.
+	 * @returns a map containing {linenumber: {from, to}}
+	 */
+	function getLineFoldsInEditor(editor) {
+		var cm = editor._codeMirror, i, folds = {};
+		if (cm) {
+			var marks = cm.getAllMarks();
+			marks.filter(function (m) {return m.__isFold; })
+				.forEach(function (mark) {
+					var range = mark.find();
+					if (range) {
+						folds[range.from.line] = range;
+					}
+				});
+		}
+		return folds;
+	}
+	/**Restores the linefolds in the editor using values fetched from the preference store*/
     function restoreLineFolds(editor) {
         var cm = editor._codeMirror, rangeFinder, foldFunc;
         if (!cm) {return; }
@@ -68,16 +84,15 @@ define(function (require, exports, module) {
             keys.forEach(function (lineNumber) {
                 cm.foldCode(+lineNumber, {range: folds[lineNumber]});
             });
+			_lineFolds[path] = folds;
         }
     }
-    
+    /**Saves the line folds in the editor using the preference storage**/
     function saveLineFolds(editor) {
         if (!editor) { return; }
+		var folds = getLineFoldsInEditor(editor);
         var path = editor.document.file.fullPath;
-        var cm = editor._codeMirror;
-        if (cm && _lineFolds[path]) {
-            _prefs.setValue(path, _lineFolds[path]);
-        }
+        _prefs.setValue(path, folds);
     }
     
     function onGutterClick(cm, line, gutter, event) {

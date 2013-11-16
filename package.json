@@ -1,6 +1,6 @@
 {
     "name": "brackets-code-folding",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Brackets extension that provides simple code folding for css, less, json, javascript, xml and html files.",
     "keywords": [".js", ".json", "code folding", "code collapsing", ".html", ".xml", ".htm", ".php", ".css", ".less"],
     "categories": ["formatting", "general", "editing", "visual"],

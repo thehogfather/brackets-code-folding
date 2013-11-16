@@ -8,8 +8,6 @@
 /*global define, d3, require, $, brackets, window, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
- 
-
     var Pos = CodeMirror.Pos;
     function cmp(a, b) { return a.line - b.line || a.ch - b.ch; }
 
@@ -37,7 +35,8 @@ define(function (require, exports, module) {
         iter.text = iter.cm.getLine(++iter.line);
         return true;
     }
-    function prevLine(iter) {
+    
+	function prevLine(iter) {
         if (iter.line <= iter.min) { return; }
         iter.text = iter.cm.getLine(--iter.line);
         iter.ch = iter.text.length;
@@ -57,7 +56,8 @@ define(function (require, exports, module) {
             return selfClose ? "selfClose" : "regular";
         }
     }
-    function toTagStart(iter) {
+    
+	function toTagStart(iter) {
         for (;;) {
             var lt = iter.ch ? iter.text.lastIndexOf("<", iter.ch - 1) : -1;
             if (lt == -1) {
@@ -83,7 +83,8 @@ define(function (require, exports, module) {
             return found;
         }
     }
-    function toPrevTag(iter) {
+    
+	function toPrevTag(iter) {
         for (;;) {
             var gt = iter.ch ? iter.text.lastIndexOf(">", iter.ch - 1) : -1;
             if (gt == -1) { if (prevLine(iter)) { continue; } else { return; } }
@@ -120,7 +121,8 @@ define(function (require, exports, module) {
             }
         }
     }
-    function findMatchingOpen(iter, tag) {
+    
+	function findMatchingOpen(iter, tag) {
         var stack = [];
         for (;;) {
             var prev = toPrevTag(iter);
@@ -179,7 +181,6 @@ define(function (require, exports, module) {
         }
     };
 
-   
     module.exports = function (cm, start) {
         var iter = new Iter(cm, start.line, 0);
         for (;;) {
