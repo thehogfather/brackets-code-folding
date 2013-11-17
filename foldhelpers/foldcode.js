@@ -41,7 +41,7 @@ define(function (require, exports, module) {
                 return widget;
             }
             
-            var range = options.range || getRange(true);
+            var range = getRange(true);
             if (options && options.scanUp) {
                 while (!range && pos.line > cm.firstLine()) {
                     pos = CodeMirror.Pos(pos.line - 1, 0);
