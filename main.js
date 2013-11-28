@@ -117,8 +117,12 @@ define(function (require, exports, module) {
     function saveLineFolds(editor) {
         if (!editor) { return; }
 		var folds = getLineFoldsInEditor(editor);
-        var path = editor.document.file.fullPath;
-        _prefs.setValue(path, folds);
+		var path = editor.document.file.fullPath;
+		if (Object.keys(folds).length) {
+			_prefs.setValue(path, folds);
+		} else {
+			_prefs.remove(path);
+		}
     }
     
     function onGutterClick(cm, line, gutter, event) {
@@ -255,8 +259,8 @@ define(function (require, exports, module) {
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
 
-    KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt--");
-    KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-=");
+    KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-C");
+    KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-X");
     KeyBindingManager.addBinding(COLLAPSE_ALL, "Alt-1");
     KeyBindingManager.addBinding(EXPAND_ALL, "Shift-Alt-1");
 });
