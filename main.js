@@ -51,13 +51,14 @@ define(function (require, exports, module) {
     var braceFold = require("foldhelpers/brace-fold"),
         commentFold = require("foldhelpers/comment-fold"),
         xmlFold =   require("foldhelpers/xml-fold"),
-        indentFold = require("foldhelpers/indent-fold");
+        indentFold = require("foldhelpers/indent-fold"),
+        latexFold   = require("foldhelpers/latex-fold");
 
     CodeMirror.registerHelper("fold", "brace", braceFold);
     CodeMirror.registerHelper("fold", "comment", commentFold);
     CodeMirror.registerHelper("fold", "xml", xmlFold);
     CodeMirror.registerHelper("fold", "indent", indentFold);
-    
+    CodeMirror.registerHelper("fold", "stex", latexFold);
      /**
      * Utility function to fold a line if it is not already folded
      */
@@ -141,10 +142,11 @@ define(function (require, exports, module) {
             }
         } else {
             if (event.altKey) {
-                range = opts.rangeFinder(cm, CodeMirror.Pos(line));
+                var rf = opts.rangeFinder || cm.getHelper(CodeMirror.Pos(line), "fold");
+                range = rf(cm, CodeMirror.Pos(line));
                 if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
-                        cm.foldCode(i, opts);
+                        if (!cm.isFolded(i)) { cm.foldCode(i, opts); }
                     }
                 }
             } else {
@@ -190,9 +192,7 @@ define(function (require, exports, module) {
             for (i = editor.getFirstVisibleLine(); i < editor.getLastVisibleLine(); i++) {
                 if (!cm.isFolded(i)) {
                     range = cm.foldCode(i, opts);
-                    if (range) {
-                        i = range.to.line;
-                    }
+                    if (range) { i = range.to.line; }
                 } else {
                     range = _lineFolds[editor.document.file.fullPath][i];
                     i = range.to.line;
@@ -217,10 +217,7 @@ define(function (require, exports, module) {
 			var path = editor.document.file.fullPath;
             _lineFolds[path] = _lineFolds[path] || {};
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
-            cm.setOption("foldGutter", {
-                rangeFinder: new CodeMirror.fold.combine(CodeMirror.fold.brace, CodeMirror.fold.comment, CodeMirror.fold.xml),
-                onGutterClick: onGutterClick
-            });
+            cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
                 _lineFolds[path][from.line] = {from: from, to: to};
             });
