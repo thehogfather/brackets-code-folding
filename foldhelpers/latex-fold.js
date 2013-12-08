@@ -23,23 +23,23 @@ define(function (require, exports, module) {
                 return {line: i + 1, ch: 0};
             }
             
-            var regex;
+            var regex, pos;
             if (match.indexOf("\\begin") === 0) { //look for \end{context}
                 regex = new RegExp("\\end\\s*\\{" + context + "\\}");
             } else {
-                regex = new RegExp("\\" + match);
                 if (match.indexOf("\\subsection") === 0) {
                     regex = /^([\\](?:subsection|section)\*?\s*\{)([\w\s\d\(\)\,\.\?]+)\}/;
                 } else if (match.indexOf("\\subsubsection") === 0) {
                     regex = /^([\\](?:subsubsection|subsection|section)\*?\s*\{)([\w\s\d\(\)\,\.\?]+)\}/;
+                } else if (match.indexOf("\\section") === 0) {
+                    regex = /^([\\](?:section|bibliography|biblipgraphystyle)\*?\s*\{)([\w\s\d\(\)\,\.\?]+)\}/;
                 }
-                var pos = find(regex);
-                if (pos) {
-                    pos.line = pos.line - 1;
-                }
-                return pos;
             }
-            return find(regex);
+            pos = find(regex);
+            if (pos) {
+                pos.line = pos.line - 1;
+            }
+            return pos;
         }
         
         var matches = startRegex.exec(lineText);

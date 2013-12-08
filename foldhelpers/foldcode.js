@@ -12,8 +12,11 @@ define(function (require, exports, module) {
         function doFold(cm, pos, options, force) {
             var finder = options && (options.call ? options : options.rangeFinder);
             if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
-            if (!finder) { finder = cm.getHelper(pos, "fold"); }
-            if (!finder) { return; }
+            if (!finder) {
+                var foldHelper = cm.getHelper(pos, "fold");
+                if (!foldHelper) { return; }
+                finder = new CodeMirror.fold.combine(foldHelper, CodeMirror.fold.comment);
+            }
             var minSize = (options && options.minFoldSize) || 1;
 
             function getRange(allowFolded) {
@@ -89,7 +92,7 @@ define(function (require, exports, module) {
             return function (cm, start) {
                 var i;
                 for (i = 0; i < funcs.length; ++i) {
-                    var found = funcs[i](cm, start);
+                    var found = funcs[i] && funcs[i](cm, start);
                     if (found) { return found; }
                 }
             };
