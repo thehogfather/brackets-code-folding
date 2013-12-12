@@ -7,6 +7,8 @@
 /*global define, d3, require, $, brackets, window, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
+    var braceFold = require("./brace-fold");
+    
     module.exports = function (cm, start) {
         var line = start.line, lineText = cm.getLine(line);
         var startToken, endToken, tokenType = null;
@@ -44,7 +46,7 @@ define(function (require, exports, module) {
         
         var matches = startRegex.exec(lineText);
         
-        if (!matches) { return null; }
+        if (!matches) { return braceFold(cm, start); }
         //find the close tag depending on the match
         var end = findClose(matches[1], matches[2]);
         if (!end) { return null; }
