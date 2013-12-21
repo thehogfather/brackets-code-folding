@@ -73,7 +73,7 @@ define(function (require, exports, module) {
     
 	//gets the linefolds saved for the current document in the preference store
     function getLineFolds(path) {
-        if (!_prefs.getValue(path)) { _prefs.setValue(path, []); }
+        if (!_prefs.getValue(path)) { _prefs.setValue(path, _lineFolds[path] || []); }
         return _prefs.getValue(path);
     }
 	
@@ -97,20 +97,22 @@ define(function (require, exports, module) {
 	
 	/**Restores the linefolds in the editor using values fetched from the preference store*/
     function restoreLineFolds(editor) {
-        var cm = editor._codeMirror, rangeFinder, foldFunc;
-        if (!cm) {return; }
-        var path = editor.document.file.fullPath, keys;
-        var folds = getLineFolds(path), vp = cm.getViewport();
-        if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
-            folds.forEach(function (line) {
-                cm.foldCode(line);
-            });
-        } else if (folds && (keys = Object.keys(folds)).length) {
-            var i, range;
-            keys.forEach(function (lineNumber) {
-                cm.foldCode(+lineNumber, {range: folds[lineNumber]});
-            });
-			_lineFolds[path] = folds;
+        if (editor) {
+            var cm = editor._codeMirror, rangeFinder, foldFunc;
+            if (!cm) {return; }
+            var path = editor.document.file.fullPath, keys;
+            var folds = getLineFolds(path), vp = cm.getViewport();
+            if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
+                folds.forEach(function (line) {
+                    cm.foldCode(line);
+                });
+            } else if (folds && (keys = Object.keys(folds)).length) {
+                var i, range;
+                keys.forEach(function (lineNumber) {
+                    cm.foldCode(+lineNumber, {range: folds[lineNumber]});
+                });
+                _lineFolds[path] = folds;
+            }
         }
     }
 	
@@ -240,6 +242,10 @@ define(function (require, exports, module) {
 	}
 	
     $(EditorManager).on("activeEditorChange", onActiveEditorChanged);
+    $(DocumentManager).on("documentRefreshed", function (event, doc) {
+        //restore the folds for this document
+        restoreLineFolds(doc._masterEditor);
+    });
     
     $(ProjectManager).on("beforeProjectClose beforeAppClose", saveBeforeClose);
     
