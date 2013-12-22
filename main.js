@@ -42,9 +42,9 @@ define(function (require, exports, module) {
         COLLAPSE_ALL            = "codefolding.collapse.all",
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
-        EXPAND_ALL              = "codefolding.expand.all",
-		_lineFolds				= {};
-	ExtensionUtils.loadStyleSheet(module, "main.less");
+        EXPAND_ALL              = "codefolding.expand.all";
+
+    ExtensionUtils.loadStyleSheet(module, "main.less");
     ///load cm folding code
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
@@ -55,25 +55,15 @@ define(function (require, exports, module) {
         latexFold   = require("foldhelpers/latex-fold");
 
     CodeMirror.registerHelper("fold", "brace", braceFold);
+    CodeMirror.registerHelper("fold", "less", braceFold);
     CodeMirror.registerHelper("fold", "comment", commentFold);
     CodeMirror.registerHelper("fold", "xml", xmlFold);
     CodeMirror.registerHelper("fold", "indent", indentFold);
     CodeMirror.registerHelper("fold", "stex", latexFold);
-     /**
-     * Utility function to fold a line if it is not already folded
-     */
-    function _foldLine(cm, line) {
-        if (!cm.isFolded(line)) { cm.foldCode(line); }
-    }
-	
-    //expands a line if not already expanded
-    function _expandLine(cm, line) {
-        if (cm.isFolded(line)) { cm.unfoldCode(line); }
-    }
     
 	//gets the linefolds saved for the current document in the preference store
     function getLineFolds(path) {
-        if (!_prefs.getValue(path)) { _prefs.setValue(path, _lineFolds[path] || []); }
+        if (!_prefs.getValue(path)) { _prefs.setValue(path,  []); }
         return _prefs.getValue(path);
     }
 	
@@ -109,9 +99,8 @@ define(function (require, exports, module) {
             } else if (folds && (keys = Object.keys(folds)).length) {
                 var i, range;
                 keys.forEach(function (lineNumber) {
-                    cm.foldCode(+lineNumber, {range: folds[lineNumber]});
+                    cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
                 });
-                _lineFolds[path] = folds;
             }
         }
     }
@@ -133,9 +122,10 @@ define(function (require, exports, module) {
 		if (opts && opts.range && opts.range.from.line !== line) { opts.range = undefined; }
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
+        var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
-                range = _lineFolds[editor.document.file.fullPath][line];
+                range = _lineFolds[line];
                 for (i = range.to.line; i >=  range.from.line; i--) {
                     if (cm.isFolded(i)) { cm.unfoldCode(i + 1); }
                 }
@@ -191,12 +181,13 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror, opts = cm.state.foldGutter.options, range;
+            var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
             for (i = editor.getFirstVisibleLine(); i < editor.getLastVisibleLine(); i++) {
                 if (!cm.isFolded(i)) {
                     range = cm.foldCode(i, opts);
                     if (range) { i = range.to.line; }
                 } else {
-                    range = _lineFolds[editor.document.file.fullPath][i];
+                    range = _lineFolds[i];
                     i = range.to.line;
                 }
             }
@@ -216,15 +207,17 @@ define(function (require, exports, module) {
 	function registerHandlers(editor) {
 		var cm = editor._codeMirror;
 		if (cm) {
-			var path = editor.document.file.fullPath;
-            _lineFolds[path] = _lineFolds[path] || {};
+			var path = editor.document.file.fullPath, _lineFolds = _prefs.getValue(path);
+            _lineFolds = _lineFolds || {};
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
-                _lineFolds[path][from.line] = {from: from, to: to};
+                _lineFolds[from.line] = {from: from, to: to};
+                _prefs.setValue(path, _lineFolds);
             });
             cm.on("unfold", function (cm, from, to) {
-                delete _lineFolds[path][from.line];
+                delete _lineFolds[from.line];
+                _prefs.setValue(path, _lineFolds);
             });
 		}
 	}
