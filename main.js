@@ -45,7 +45,7 @@ define(function (require, exports, module) {
         EXPAND_ALL              = "codefolding.expand.all";
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
-    ///load cm folding code
+
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
     var braceFold = require("foldhelpers/brace-fold"),
@@ -59,6 +59,7 @@ define(function (require, exports, module) {
     CodeMirror.registerHelper("fold", "comment", commentFold);
     CodeMirror.registerHelper("fold", "xml", xmlFold);
     CodeMirror.registerHelper("fold", "indent", indentFold);
+    CodeMirror.registerHelper("fold", "ruby", indentFold);
     CodeMirror.registerHelper("fold", "stex", latexFold);
     
 	//gets the linefolds saved for the current document in the preference store
@@ -99,7 +100,7 @@ define(function (require, exports, module) {
             } else if (folds && (keys = Object.keys(folds)).length) {
                 var i, range;
                 keys.forEach(function (lineNumber) {
-                    cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
+                    cm.foldCode(+lineNumber, null, "fold");
                 });
             }
         }
@@ -119,7 +120,6 @@ define(function (require, exports, module) {
     
     function onGutterClick(cm, line, gutter, event) {
         var opts = cm.state.foldGutter.options;
-		if (opts && opts.range && opts.range.from.line !== line) { opts.range = undefined; }
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
         var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
@@ -138,11 +138,11 @@ define(function (require, exports, module) {
                 range = rf(cm, CodeMirror.Pos(line));
                 if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
-                        if (!cm.isFolded(i)) { cm.foldCode(i, opts); }
+                        if (!cm.isFolded(i)) { cm.foldCode(i); }
                     }
                 }
             } else {
-                cm.foldCode(line, opts);
+                cm.foldCode(line);
             }
         }
     }
@@ -153,15 +153,13 @@ define(function (require, exports, module) {
     function collapseCurrent() {
         var editor = EditorManager.getFocusedEditor();
         if (editor) {
-            var cm = editor._codeMirror, opts = cm.state.foldGutter.options;
+            var cm = editor._codeMirror;
             var cursor = editor.getCursorPos(), i;
-            if (opts.rangeFinder) {
-                //move cursor up until a collapsible line is found
-                for (i = cursor.line; i >= 0; i--) {
-					if (cm.foldCode(i, opts)) {
-						editor.setCursorPos(i);
-						return;
-					}
+            //move cursor up until a collapsible line is found
+            for (i = cursor.line; i >= 0; i--) {
+                if (cm.foldCode(i)) {
+                    editor.setCursorPos(i);
+                    return;
                 }
             }
         }
@@ -172,19 +170,19 @@ define(function (require, exports, module) {
     function expandCurrent() {
         var editor = EditorManager.getFocusedEditor();
         if (editor) {
-            var cursor = editor.getCursorPos(), cm = editor._codeMirror, opts = cm.state.foldGutter.options;
-            cm.unfoldCode(cursor.line + 1, opts);
+            var cursor = editor.getCursorPos(), cm = editor._codeMirror;
+            cm.unfoldCode(cursor.line + 1);
         }
     }
     
     function collapseAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
-            var i, cm = editor._codeMirror, opts = cm.state.foldGutter.options, range;
+            var i, cm = editor._codeMirror, range;
             var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
             for (i = editor.getFirstVisibleLine(); i < editor.getLastVisibleLine(); i++) {
                 if (!cm.isFolded(i)) {
-                    range = cm.foldCode(i, opts);
+                    range = cm.foldCode(i);
                     if (range) { i = range.to.line; }
                 } else {
                     range = _lineFolds[i];
@@ -197,9 +195,9 @@ define(function (require, exports, module) {
     function expandAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
-            var i, cm = editor._codeMirror, opts = cm.state.foldGutter.options;
+            var i, cm = editor._codeMirror;
             for (i = editor.getFirstVisibleLine(); i < editor.getLastVisibleLine(); i++) {
-                if (cm.isFolded(i)) { cm.unfoldCode(i + 1, opts); }
+                if (cm.isFolded(i)) { cm.unfoldCode(i + 1); }
             }
         }
     }
