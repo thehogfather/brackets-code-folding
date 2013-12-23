@@ -48,11 +48,11 @@ define(function (require, exports, module) {
 
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
-    var braceFold = require("foldhelpers/brace-fold"),
-        commentFold = require("foldhelpers/comment-fold"),
-        xmlFold =   require("foldhelpers/xml-fold"),
-        indentFold = require("foldhelpers/indent-fold"),
-        latexFold   = require("foldhelpers/latex-fold");
+    var braceFold               = require("foldhelpers/brace-fold"),
+        commentFold             = require("foldhelpers/comment-fold"),
+        xmlFold                 =   require("foldhelpers/xml-fold"),
+        indentFold              = require("foldhelpers/indent-fold"),
+        latexFold               = require("foldhelpers/latex-fold");
 
     CodeMirror.registerHelper("fold", "brace", braceFold);
     CodeMirror.registerHelper("fold", "less", braceFold);
@@ -89,7 +89,7 @@ define(function (require, exports, module) {
 	/**Restores the linefolds in the editor using values fetched from the preference store*/
     function restoreLineFolds(editor) {
         if (editor) {
-            var cm = editor._codeMirror, rangeFinder, foldFunc;
+            var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
             var folds = getLineFolds(path), vp = cm.getViewport();
@@ -119,7 +119,7 @@ define(function (require, exports, module) {
     }
     
     function onGutterClick(cm, line, gutter, event) {
-        var opts = cm.state.foldGutter.options;
+        var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
         var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
@@ -134,8 +134,8 @@ define(function (require, exports, module) {
             }
         } else {
             if (event.altKey) {
-                var rf = opts.rangeFinder || cm.getHelper(CodeMirror.Pos(line), "fold");
-                range = rf(cm, CodeMirror.Pos(line));
+                var rf = cm.foldRangeFinder(pos);
+                range = rf(cm, pos);
                 if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
                         if (!cm.isFolded(i)) { cm.foldCode(i); }

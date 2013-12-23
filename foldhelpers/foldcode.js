@@ -8,15 +8,15 @@
 /*global define, d3, require, $, brackets, window, CodeMirror, document */
 define(function (require, exports, module) {
     "use strict";
+    var indentFold              = require("foldhelpers/indent-fold");
+    
     module.exports = function () {
         function doFold(cm, pos, options, force) {
-            var finder = options && (options.call ? options : options.rangeFinder);
             if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
-            if (!finder) {
-                var foldHelper = cm.getHelper(pos, "fold");
-                if (!foldHelper) { return; }
-                finder = new CodeMirror.fold.combine(foldHelper, CodeMirror.fold.comment);
-            }
+            var foldHelper = cm.foldRangeFinder(pos);
+            if (!foldHelper) { return; }
+            //combile the foldhelper for the current mode with the comment fold helper
+            var finder = new CodeMirror.fold.combine(foldHelper, CodeMirror.fold.comment);
             var minSize = (options && options.minFoldSize) || 1;
 
             function getRange(allowFolded) {
@@ -85,6 +85,16 @@ define(function (require, exports, module) {
         //define an unfoldCode extension to quickly unfold folded code
         CodeMirror.defineExtension("unfoldCode", function (pos) {
             unFold(this, pos);
+        });
+        
+        /**
+            automatically gets the range finder based on the current mode and
+            defaults to the indent fold if no explicit fold is defined
+        */
+        CodeMirror.defineExtension("foldRangeFinder", function (pos) {
+            if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
+            var rf = this.getHelper(pos, "fold") || indentFold;
+            return rf;
         });
 
         CodeMirror.registerHelper("fold", "combine", function () {
