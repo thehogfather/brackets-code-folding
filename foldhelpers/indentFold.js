@@ -41,7 +41,7 @@ define(function (require, exports, module) {
                         collapsible = true;
                     }
                 } else {
-                    if (indent === lineIndent) {
+                    if (indent <= lineIndent) {
                         return {from: pos(start.line, lineText.length),
                                 to: pos(i - 1, cm.getLine(i - 1).length)};
                     }
