@@ -51,7 +51,7 @@ define(function (require, exports, module) {
     var braceFold               = require("foldhelpers/brace-fold"),
         commentFold             = require("foldhelpers/comment-fold"),
         xmlFold                 =   require("foldhelpers/xml-fold"),
-        indentFold              = require("foldhelpers/indent-fold"),
+        indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold");
 
     CodeMirror.registerHelper("fold", "brace", braceFold);

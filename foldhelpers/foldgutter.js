@@ -50,7 +50,7 @@ define(function (require, exports, module) {
                     var pos = CodeMirror.Pos(cur, 0),
                         func = new CodeMirror.fold.combine(cm.foldRangeFinder(pos), CodeMirror.fold.comment);
                     var range = func && func(cm, pos);
-                    if (range && range.from.line + 1 < range.to.line) {
+                    if (range && range.from.line < range.to.line) {
                         mark = marker(opts.indicatorOpen);
                     }
                 }

@@ -8,7 +8,7 @@
 /*global define, d3, require, $, brackets, window, CodeMirror, document */
 define(function (require, exports, module) {
     "use strict";
-    var indentFold              = require("foldhelpers/indent-fold");
+    var indentFold              = require("foldhelpers/indentFold");
     
     module.exports = function () {
         function doFold(cm, pos, options, force) {

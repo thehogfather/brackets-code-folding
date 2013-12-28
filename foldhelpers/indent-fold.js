@@ -11,7 +11,10 @@ define(function (require, exports, module) {
         var lastLine = cm.lastLine(),
             tabSize = cm.getOption("tabSize"),
             firstLine = cm.getLine(start.line),
-            myIndent = CodeMirror.countColumn(firstLine, null, tabSize);
+            myIndent = CodeMirror.countColumn(firstLine, null, tabSize),
+            token = cm.getTokenAt(CodeMirror.Pos(start.line, 0));
+        //ignore blank lines or comment lines
+        if (firstLine.trim().length === 0 || (token && token.type === "comment")) { return; }
 
         function foldEnded(curColumn, prevColumn) {
             return curColumn < myIndent ||
