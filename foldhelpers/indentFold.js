@@ -1,5 +1,5 @@
 /**
- * 
+ * Fold range finder based on line indentations. Ignores blank lines and commented lines
  * @author Patrick Oladimeji
  * @date 12/27/13 21:54:41 PM
  */
