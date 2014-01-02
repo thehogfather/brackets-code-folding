@@ -50,7 +50,7 @@ define(function (require, exports, module) {
     require("foldhelpers/foldgutter")();
     var braceFold               = require("foldhelpers/brace-fold"),
         commentFold             = require("foldhelpers/comment-fold"),
-        xmlFold                 =   require("foldhelpers/xml-fold"),
+        xmlFold                 = require("foldhelpers/xml-fold"),
         indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold");
 
