@@ -27,6 +27,15 @@
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
+
+require.config({
+    paths: {
+        "text" : "lib/text",
+        "i18n" : "lib/i18n"
+    },
+    locale: brackets.getLocale()
+});
+
 define(function (require, exports, module) {
     "use strict";
     var CommandManager          = brackets.getModule("command/CommandManager"),
@@ -240,11 +249,13 @@ define(function (require, exports, module) {
     
     $(ProjectManager).on("beforeProjectClose beforeAppClose", saveBeforeClose);
     
-    CommandManager.register("Collapse All", COLLAPSE_ALL, collapseAll);
-    CommandManager.register("Expand All", EXPAND_ALL, expandAll);
+    var Strings = require("strings");
+    
+    CommandManager.register(Strings.CollapseAll, COLLAPSE_ALL, collapseAll);
+    CommandManager.register(Strings.ExpandAll, EXPAND_ALL, expandAll);
 
-    CommandManager.register("Collapse Current", COLLAPSE, collapseCurrent);
-    CommandManager.register("Expand Current", EXPAND, expandCurrent);
+    CommandManager.register(Strings.CollapseCurrent, COLLAPSE, collapseCurrent);
+    CommandManager.register(Strings.ExpandCurrent, EXPAND, expandCurrent);
     
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE);
