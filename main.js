@@ -251,7 +251,6 @@ define(function (require, exports, module) {
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_ALL);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
-	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
 
     KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-C");
     KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-X");
