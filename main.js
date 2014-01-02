@@ -263,8 +263,6 @@ define(function (require, exports, module) {
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_ALL);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
 
-    KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-C");
-    KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-X");
-    KeyBindingManager.addBinding(COLLAPSE_ALL, "Alt-1");
-    KeyBindingManager.addBinding(EXPAND_ALL, "Shift-Alt-1");
+    KeyBindingManager.addBinding(COLLAPSE, "Alt-C");
+    KeyBindingManager.addBinding(EXPAND, "Alt-E");
 });
