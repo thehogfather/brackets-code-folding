@@ -1,9 +1,9 @@
 {
     "name": "brackets-code-folding",
-    "version": "0.2.2",
-    "description": "Brackets extension that provides simple code folding for files edited in brackets. Supports brace folding for languages like javascript, php, java, c, c++ etc, indent folding for python, haskell and tag folding for html and xml files.",
+    "version": "0.2.3",
+    "description": "Brackets extension that provides simple code folding for files edited in brackets. Supports brace folding, tag folding, indent folding and multi-line comment folding",
     "homepage": "https://github.com/thehogfather/brackets-code-folding",
-    "keywords": [".js", ".json", "code folding", "code collapsing", ".html", ".xml", ".htm", ".php", ".css", ".less"],
+    "keywords": ["code folding", "code collapsing"],
     "categories": ["formatting", "general", "editing", "visual"],
     "engines": ">=32",
     "contributors": [

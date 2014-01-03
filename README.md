@@ -16,8 +16,10 @@ Navigate to **Brackets > File > Install Extension** and paste url https://github
 ### Keyboard shortcuts
 The following are the default keyboard shortcut keys for the code-folding extension.
 
-    Alt-C Collapse code region at current cursor position
-    Alt-E Expand code region at current cursor position
+    Ctrl-Alt-C Collapse code region at current cursor position
+    Ctrl-Alt-X Expand code region at current cursor position
+    Alt-1 Collapse all code regions in current editor
+    Shift-Alt-1 Expand all code regions in current editor
 
 ##Known Issues
 **If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, please use an extension like [Brackets Key Remapper](https://bitbucket.org/sacah/brackets-key-remapper) to change the shortcut keys to suit your needs.**
