@@ -189,7 +189,7 @@ define(function (require, exports, module) {
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror, range;
             var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
-            for (i = editor.getLastVisibleLine(); i > editor.getFirstVisibleLine(); i--) {
+            for (i = editor.getLastVisibleLine(); i >= editor.getFirstVisibleLine(); i--) {
                 if (!cm.isFolded(i)) {
                     cm.foldCode(i);
                 }
