@@ -42,17 +42,16 @@ define(function (require, exports, module) {
         DocumentManager         = brackets.getModule("document/DocumentManager"),
         EditorManager           = brackets.getModule("editor/EditorManager"),
         ProjectManager          = brackets.getModule("project/ProjectManager"),
-        PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
         KeyBindingManager       = brackets.getModule("command/KeyBindingManager"),
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),
 		Menus					= brackets.getModule("command/Menus"),
-        _prefs                  = PreferencesManager.getPreferenceStorage(module),
+        _prefs                  = require("./Prefs"),
         CODE_FOLD_EXT           = "javascript.code.folding",
         COLLAPSE_ALL            = "codefolding.collapse.all",
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all";
-
+    
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
     require("foldhelpers/foldcode")();
@@ -73,8 +72,8 @@ define(function (require, exports, module) {
     
 	//gets the linefolds saved for the current document in the preference store
     function getLineFolds(path) {
-        if (!_prefs.getValue(path)) { _prefs.setValue(path,  []); }
-        return _prefs.getValue(path);
+        if (!_prefs.get(path)) { _prefs.set(path,  []); }
+        return _prefs.get(path);
     }
 	
     /** gets the folded regions in the editor.
@@ -121,9 +120,9 @@ define(function (require, exports, module) {
 		var folds = getLineFoldsInEditor(editor);
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
-			_prefs.setValue(path, folds);
+			_prefs.set(path, folds);
 		} else {
-			_prefs.remove(path);
+			_prefs.set(path, undefined);
 		}
     }
     
@@ -131,7 +130,7 @@ define(function (require, exports, module) {
         var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
-        var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
+        var _lineFolds = _prefs.get(editor.document.file.fullPath);
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
                 range = _lineFolds[line];
@@ -188,7 +187,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror, range;
-            var _lineFolds = _prefs.getValue(editor.document.file.fullPath);
+            var _lineFolds = _prefs.get(editor.document.file.fullPath);
             for (i = editor.getLastVisibleLine(); i >= editor.getFirstVisibleLine(); i--) {
                 if (!cm.isFolded(i)) {
                     cm.foldCode(i);
@@ -210,17 +209,17 @@ define(function (require, exports, module) {
 	function registerHandlers(editor) {
 		var cm = editor._codeMirror;
 		if (cm) {
-			var path = editor.document.file.fullPath, _lineFolds = _prefs.getValue(path);
+			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
                 _lineFolds[from.line] = {from: from, to: to};
-                _prefs.setValue(path, _lineFolds);
+                _prefs.set(path, _lineFolds);
             });
             cm.on("unfold", function (cm, from, to) {
                 delete _lineFolds[from.line];
-                _prefs.setValue(path, _lineFolds);
+                _prefs.set(path, _lineFolds);
             });
 		}
 	}
