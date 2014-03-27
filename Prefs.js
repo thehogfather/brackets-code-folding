@@ -8,18 +8,20 @@
 define(function (require, exports, module) {
     "use strict";
     var PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
-        _prefs                  = PreferencesManager.getExtensionPrefs("code-folding"),
+        _newAPI                 = PreferencesManager.getExtensionPrefs ? true : false,
+        _prefs                  = _newAPI ? PreferencesManager.getExtensionPrefs("code-folding") :
+                PreferencesManager.getPreferenceStorage(module),
         store = {},
         folds = "folds";
-        
+    
     module.exports = {
         get: function (id) {
-            store = _prefs.get(folds) || {};
+            store = _newAPI ? (_prefs.get(folds) || {}) : (_prefs.getValue(folds) || {});
             return store[id];
         },
         set: function (id, value) {
             store[id] = value;
-            return _prefs.set(folds, store);
+            return _newAPI ? _prefs.set(folds, store) : _prefs.setValue(folds, store);
         }
     };
 
