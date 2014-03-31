@@ -5,11 +5,15 @@
  * @date 10/24/13 9:40:25 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, continue: true, eqeq: true*/
-/*global define, d3, require, $, brackets, window, CodeMirror */
+/*global define, brackets */
 define(function (require, exports, module) {
     "use strict";
+
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+
     var Pos = CodeMirror.Pos;
     function cmp(a, b) { return a.line - b.line || a.ch - b.ch; }
+
 
     var nameStartChar = "A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD";
     var nameChar = nameStartChar + "\-\:\.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040";
@@ -35,8 +39,8 @@ define(function (require, exports, module) {
         iter.text = iter.cm.getLine(++iter.line);
         return true;
     }
-    
-	function prevLine(iter) {
+
+    function prevLine(iter) {
         if (iter.line <= iter.min) { return; }
         iter.text = iter.cm.getLine(--iter.line);
         iter.ch = iter.text.length;
@@ -56,8 +60,8 @@ define(function (require, exports, module) {
             return selfClose ? "selfClose" : "regular";
         }
     }
-    
-	function toTagStart(iter) {
+
+    function toTagStart(iter) {
         for (;;) {
             var lt = iter.ch ? iter.text.lastIndexOf("<", iter.ch - 1) : -1;
             if (lt == -1) {
@@ -83,8 +87,8 @@ define(function (require, exports, module) {
             return found;
         }
     }
-    
-	function toPrevTag(iter) {
+
+    function toPrevTag(iter) {
         for (;;) {
             var gt = iter.ch ? iter.text.lastIndexOf(">", iter.ch - 1) : -1;
             if (gt == -1) { if (prevLine(iter)) { continue; } else { return; } }
@@ -112,8 +116,8 @@ define(function (require, exports, module) {
                 if (i < 0 && (!tag || tag == next[2])) {
                     return {
                         tag: next[2],
-                        from: Pos(startLine, startCh),
-                        to: Pos(iter.line, iter.ch)
+                        from: new Pos(startLine, startCh),
+                        to: new Pos(iter.line, iter.ch)
                     };
                 }
             } else { // opening tag
@@ -121,8 +125,8 @@ define(function (require, exports, module) {
             }
         }
     }
-    
-	function findMatchingOpen(iter, tag) {
+
+    function findMatchingOpen(iter, tag) {
         var stack = [];
         for (;;) {
             var prev = toPrevTag(iter);
@@ -140,12 +144,12 @@ define(function (require, exports, module) {
                         break;
                     }
                 }
-                
+
                 if (i < 0 && (!tag || tag == start[2])) {
                     return {
                         tag: start[2],
-                        from: Pos(iter.line, iter.ch),
-                        to: Pos(endLine, endCh)
+                        from: new Pos(iter.line, iter.ch),
+                        to: new Pos(endLine, endCh)
                     };
                 }
             }
@@ -157,11 +161,11 @@ define(function (require, exports, module) {
     CodeMirror.findMatchingTag = function (cm, pos, range) {
         var iter = new Iter(cm, pos.line, pos.ch, range);
         if (iter.text.indexOf(">") == -1 && iter.text.indexOf("<") == -1) { return; }
-        var end = toTagEnd(iter), to = end && Pos(iter.line, iter.ch);
+        var end = toTagEnd(iter), to = end && new Pos(iter.line, iter.ch);
         var start = end && toTagStart(iter);
         if (!end || end == "selfClose" || !start || cmp(iter, pos) > 0) { return; }
-        var here = {from: Pos(iter.line, iter.ch), to: to, tag: start[2]};
-    
+        var here = {from: new Pos(iter.line, iter.ch), to: to, tag: start[2]};
+
         if (start[1]) { // closing tag
             return {open: findMatchingOpen(iter, start[2]), close: here, at: "close"};
         } else { // opening tag
@@ -187,7 +191,7 @@ define(function (require, exports, module) {
             var openTag = toNextTag(iter), end;
             if (!openTag || iter.line != start.line || !(end = toTagEnd(iter))) { return; }
             if (!openTag[1] && end != "selfClose") {
-                start = Pos(iter.line, iter.ch);
+                start = new Pos(iter.line, iter.ch);
                 var close = findMatchingClose(iter, openTag[2]);
                 return close && {from: start, to: close.from};
             }

@@ -4,9 +4,11 @@
  * @date 4/19/13 23:03:05 PM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, regexp:true, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
+/*global define, brackets*/
 define(function (require, exports, module) {
     "use strict";
+
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var startTagRegex = /\s*(<((:?\w|[\.\_\-\:])+)\s*[^>]*?>)/g, endTagRegex = /\s*(<\/((:?\w|[\.\_\-\:])+)\s*>)/g;
     var util                = require("./util"),
         addProp             = util.addProp,
@@ -16,10 +18,10 @@ define(function (require, exports, module) {
         var lineText = cm.getLine(line);
         var startTagMatches = util.matchAll(startTagRegex, lineText)
             .map(addProp("tagType", "open"))
-            .map(addProp("line", line)), startTag;
+            .map(addProp("line", line));
         var endTagMatches = util.matchAll(endTagRegex, lineText)
             .map(addProp("tagType", "close"))
-            .map(addProp("line", line)), endTag;
+            .map(addProp("line", line));
 
         function _ignoreTag(tag) {
             var token = cm.getTokenAt(CodeMirror.Pos(tag.line, tag.index + tag.matches[1].length));
