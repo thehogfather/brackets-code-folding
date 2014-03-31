@@ -5,11 +5,9 @@
  * @date 10/24/13 9:40:25 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, continue: true, eqeq: true*/
-/*global define, brackets */
+/*global define, brackets, CodeMirror */
 define(function (require, exports, module) {
     "use strict";
-
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
 
     var Pos = CodeMirror.Pos;
     function cmp(a, b) { return a.line - b.line || a.ch - b.ch; }

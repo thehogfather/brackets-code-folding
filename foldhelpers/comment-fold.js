@@ -5,10 +5,9 @@
  * @date 10/24/13 9:47:29 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, eqeq: true, continue: true */
-/*global define, brackets*/
+/*global define, brackets, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     module.exports = function (cm, start) {
         var mode = cm.getModeAt(start), startToken = mode.blockCommentStart, endToken = mode.blockCommentEnd;
         if (!startToken || !endToken) { return; }

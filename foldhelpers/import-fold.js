@@ -4,11 +4,10 @@
  * @date 10/24/13 9:29:23 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, sloppy: true*/
-/*global define, brackets*/
+/*global define, brackets, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";
 
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     module.exports = function (cm, start) {
         function hasImport(line) {
             if (line < cm.firstLine() || line > cm.lastLine()) {

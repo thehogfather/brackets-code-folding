@@ -4,11 +4,10 @@
  * @date 11/29/13 10:56:52 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets*/
+/*global define, brackets, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";
 
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var braceFold = require("./brace-fold");
     
     module.exports = function (cm, start) {

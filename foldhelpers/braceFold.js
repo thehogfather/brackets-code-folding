@@ -4,11 +4,10 @@
  * @date 10/23/13 9:36:36 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets*/
+/*global define, brackets, CodeMirror*/
 define(function (require, exports, module) {
     "use strict";
     
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var util                = require("../util"),
         addProp             = util.addProp,
         _matchAll           = util.matchAll,
