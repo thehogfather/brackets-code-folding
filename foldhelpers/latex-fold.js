@@ -4,14 +4,15 @@
  * @date 11/29/13 10:56:52 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, CodeMirror */
+/*global define, brackets*/
 define(function (require, exports, module) {
     "use strict";
+
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var braceFold = require("./brace-fold");
     
     module.exports = function (cm, start) {
         var line = start.line, lineText = cm.getLine(line);
-        var startToken, endToken, tokenType = null;
         var startRegex = /^([\\](?:section|subsection|subsubsection|begin)\*?\s*\{)([\w\s\d\(\)\,\.\?]+)\}/;
         ///fixme the matches for subsection and subsubections are wrong
         function findClose(match, context) {

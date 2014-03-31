@@ -4,9 +4,12 @@
  * @date 10/24/13 9:36:30 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, CodeMirror */
+/*global define, brackets */
 define(function (require, exports, module) {
     "use strict";
+
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+
     module.exports = function (cm, start) {
         var lastLine = cm.lastLine(),
             tabSize = cm.getOption("tabSize"),
@@ -33,5 +36,5 @@ define(function (require, exports, module) {
                         to: CodeMirror.Pos(lastFoldLineNumber, lastFoldLine.length)};
             }
         }
-};
+    };
 });

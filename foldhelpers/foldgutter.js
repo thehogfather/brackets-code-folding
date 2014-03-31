@@ -5,10 +5,11 @@
  * @date 10/24/13 10:14:01 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, document, CodeMirror, clearTimeout, setTimeout*/
+/*global define, brackets, document, clearTimeout, setTimeout*/
 define(function (require, exports, module) {
     "use strict";
 
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     module.exports = function () {
         function State(options) {
             this.options = options;

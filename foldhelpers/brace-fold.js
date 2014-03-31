@@ -4,9 +4,10 @@
  * @date 10/24/13 8:26:34 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, continue: true, eqeq: true*/
-/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror*/
+/*global define, brackets*/
 define(function (require, exports, module) {
     "use strict";
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     module.exports = function (cm, start) {
         var line = start.line, lineText = cm.getLine(line);
         var startCh, tokenType = null;

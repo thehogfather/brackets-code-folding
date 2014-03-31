@@ -4,18 +4,19 @@
  * @date 10/23/13 9:36:36 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
+/*global define, brackets*/
 define(function (require, exports, module) {
     "use strict";
     
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var util                = require("../util"),
         addProp             = util.addProp,
         _matchAll           = util.matchAll,
         copy                = util.copy;
-    var pos = CodeMirror.Pos;
-    var _rangeOpenTriggers = ["{", "[", "/*"], _rangeCloseTriggers =  ["}", "]", "*/"],
-        _matchingPairs = {"{": "}", "[": "]", "/*": "*/", "}": "{", "]": "[", "*/": "/*"};
-    var _openRegex = /(\{|\[|\/\*)/g, _closeRegex = /(\}|\]|\*\/)/g;
+    var pos = CodeMirror.Pos,
+        _matchingPairs = {"{": "}", "[": "]", "/*": "*/", "}": "{", "]": "[", "*/": "/*"},
+        _openRegex = /(\{|\[|\/\*)/g,
+        _closeRegex = /(\}|\]|\*\/)/g;
     
     function _processLine(cm, line, matchStack, openTag) {
         var lineText = cm.getLine(line),
@@ -25,7 +26,7 @@ define(function (require, exports, module) {
             closeTagMatches = _matchAll(_closeRegex, lineText)
                 .map(addProp("line", line))
                 .map(addProp("tagType", "close"));
-        var closeTag, stackCopy, token, i, tag;
+        var stackCopy, i, tag;
         /**
          * decides whether or not to ignore tags. tags are ignored if they are in the context of a string or comment
          */
@@ -89,8 +90,7 @@ define(function (require, exports, module) {
     * contents inside braces and square brackets spanning multiple lines are foldable
     */
     function rangeFinder(cm, start) {
-        var line = start.line, lineText = cm.getLine(line), i, ch, token, openIndex,
-            closeIndex, lastLine = cm.lineCount(), startLineText = cm.getLine(line);
+        var line = start.line, lineText = cm.getLine(line), i;
         var _startLineRes = _processLine(cm, line), stack = _startLineRes.stack, openTag = _startLineRes.openTag;
         
         if (!stack || !stack.length) {
