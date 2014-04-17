@@ -5,10 +5,12 @@
  * @date 10/28/13 8:41:46 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets, document, CodeMirror*/
+/*global define, brackets, document*/
 define(function (require, exports, module) {
     "use strict";
-    var indentFold = require("foldhelpers/indentFold");    
+    var indentFold = require("foldhelpers/indentFold");
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+
     module.exports = function () {
         function doFold(cm, pos, options, force) {
             if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }

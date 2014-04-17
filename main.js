@@ -38,6 +38,13 @@ require.config({
 
 define(function (require, exports, module) {
     "use strict";
+    //var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/CodeMirror");
+    
+    brackets.getModule("thirdparty/CodeMirror2/addon/fold/xml-fold");
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
+    
     var CommandManager          = brackets.getModule("command/CommandManager"),
         DocumentManager         = brackets.getModule("document/DocumentManager"),
         EditorManager           = brackets.getModule("editor/EditorManager"),
@@ -56,18 +63,9 @@ define(function (require, exports, module) {
 
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
-    var braceFold               = require("foldhelpers/brace-fold"),
-        commentFold             = require("foldhelpers/comment-fold"),
-        xmlFold                 = require("foldhelpers/xml-fold"),
-        indentFold              = require("foldhelpers/indentFold"),
+    var indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold");
 
-    CodeMirror.registerHelper("fold", "brace", braceFold);
-    CodeMirror.registerHelper("fold", "less", braceFold);
-    CodeMirror.registerHelper("fold", "comment", commentFold);
-    CodeMirror.registerHelper("fold", "xml", xmlFold);
-    CodeMirror.registerHelper("fold", "indent", indentFold);
-    CodeMirror.registerHelper("fold", "ruby", indentFold);
     CodeMirror.registerHelper("fold", "stex", latexFold);
     
 	//gets the linefolds saved for the current document in the preference store
