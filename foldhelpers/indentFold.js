@@ -4,11 +4,11 @@
  * @date 12/27/13 21:54:41 PM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets, CodeMirror*/
+/*global define, brackets*/
 
 define(function (require, exports, module) {
     "use strict";
-
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
     var cols = CodeMirror.countColumn, pos = CodeMirror.Pos;
    
     function lastNonEmptyLineNumber(cm) {

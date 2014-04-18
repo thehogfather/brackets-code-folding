@@ -8,8 +8,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var braceFold = require("./brace-fold");
-    
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+
     module.exports = function (cm, start) {
         var line = start.line, lineText = cm.getLine(line);
         var startRegex = /^([\\](?:section|subsection|subsubsection|begin)\*?\s*\{)([\w\s\d\(\)\,\.\?]+)\}/;
@@ -46,7 +47,7 @@ define(function (require, exports, module) {
         
         var matches = startRegex.exec(lineText);
         
-        if (!matches) { return braceFold(cm, start); }
+        if (!matches) { return CodeMirror.fold.brace(cm, start); }
         //find the close tag depending on the match
         var end = findClose(matches[1], matches[2]);
         if (!end) { return null; }
