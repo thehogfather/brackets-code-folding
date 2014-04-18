@@ -27,5 +27,8 @@ The following are the default keyboard shortcut keys for the code-folding extens
 ### License
 MIT-licensed.
 
+### Credits
+CodeMirror folding addon.
+
 ### Compatibility
-Brackets Sprint 23 or later.
+Brackets Sprint 38 or later.

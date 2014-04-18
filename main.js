@@ -26,7 +26,7 @@
  * @date 10/24/13 9:35:26 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, MouseEvent, CodeMirror */
+/*global define, d3, require, $, brackets, window, MouseEvent */
 
 require.config({
     paths: {
@@ -38,12 +38,7 @@ require.config({
 
 define(function (require, exports, module) {
     "use strict";
-    //var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/CodeMirror");
-    
-    brackets.getModule("thirdparty/CodeMirror2/addon/fold/xml-fold");
-    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
-    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
-    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/CodeMirror");
     
     var CommandManager          = brackets.getModule("command/CommandManager"),
         DocumentManager         = brackets.getModule("document/DocumentManager"),
@@ -61,8 +56,14 @@ define(function (require, exports, module) {
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
+    //load code mirror addons
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
+    brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
+    
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
+    
     var indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold");
 
