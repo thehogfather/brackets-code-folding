@@ -1,39 +1,44 @@
 /**
  * Based on http://codemirror.net/addon/fold/foldcode.js
-   Modulised by:
+   MOdified by:
  * @author Patrick Oladimeji
  * @date 10/28/13 8:41:46 AM
+ * @last modified 20 April 2014
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, brackets, document*/
 define(function (require, exports, module) {
     "use strict";
-    var indentFold = require("foldhelpers/indentFold");
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
 
     module.exports = function () {
         function doFold(cm, pos, options, force) {
-            if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
-            var foldHelper = cm.foldRangeFinder(pos);
-            if (!foldHelper) { return; }
-            //combile the foldhelper for the current mode with the comment fold helper
-            var finder = new CodeMirror.fold.combine(foldHelper, CodeMirror.fold.comment);
+            if (typeof pos === "number") {
+                pos = CodeMirror.Pos(pos, 0);
+            }
+            //combine the foldhelper for the current mode with the comment fold helper
+            var finder = CodeMirror.fold.auto;
             var minSize = (options && options.minFoldSize) || 1;
 
             function getRange(allowFolded) {
                 var range = finder(cm, pos);
-                if (!range || range.to.line - range.from.line < minSize) { return null; }
-                var marks = cm.findMarksAt(range.from), i;
+                if (!range || range.to.line - range.from.line < minSize) {
+                    return null;
+                }
+                var marks = cm.findMarksAt(range.from),
+                    i;
                 for (i = 0; i < marks.length; ++i) {
                     if (marks[i].__isFold && force !== "fold") {
-                        if (!allowFolded) { return null; }
+                        if (!allowFolded) {
+                            return null;
+                        }
                         range.cleared = true;
                         marks[i].clear();
                     }
                 }
                 return range;
             }
-            
+
             function makeWidget(options) {
                 var widget = (options && options.widget) || "\u2194";
                 if (typeof widget === "string") {
@@ -44,7 +49,7 @@ define(function (require, exports, module) {
                 }
                 return widget;
             }
-            
+
             var range = getRange(true);
             if (options && options.scanUp) {
                 while (!range && pos.line > cm.firstLine()) {
@@ -52,7 +57,9 @@ define(function (require, exports, module) {
                     range = getRange(false);
                 }
             }
-            if (!range || range.cleared || force === "unfold" || range.to.line - range.from.line < minSize) { return; }
+            if (!range || range.cleared || force === "unfold" || range.to.line - range.from.line < minSize) {
+                return;
+            }
 
             var myWidget = makeWidget(options);
             var myRange = cm.markText(range.from, range.to, {
@@ -60,42 +67,23 @@ define(function (require, exports, module) {
                 clearOnEnter: true,
                 __isFold: true
             });
-            CodeMirror.on(myWidget, "mousedown", function () { myRange.clear(); });
+            CodeMirror.on(myWidget, "mousedown", function () {
+                myRange.clear();
+            });
             myRange.on("clear", function (from, to) {
                 CodeMirror.signal(cm, "unfold", cm, from, to);
             });
             CodeMirror.signal(cm, "fold", cm, range.from, range.to);
             return range;
         }
-        
-        //get the folded mark and clear it
-        function unFold(cm, pos) {
-            if (typeof pos === "number") {
-                pos = CodeMirror.Pos(pos, 0);
-            }
-            var i,  marks = cm.findMarksAt(pos);
-            for (i = 0; i < marks.length; i++) {
-                if (marks[i].__isFold) { marks[i].clear(); }
-            }
-        }
 
         CodeMirror.defineExtension("foldCode", function (pos, options, force) {
             return doFold(this, pos, options, force);
         });
-    
+
         //define an unfoldCode extension to quickly unfold folded code
         CodeMirror.defineExtension("unfoldCode", function (pos) {
-            unFold(this, pos);
-        });
-        
-        /**
-            automatically gets the range finder based on the current mode and
-            defaults to the indent fold if no explicit fold is defined
-        */
-        CodeMirror.defineExtension("foldRangeFinder", function (pos) {
-            if (typeof pos === "number") { pos = CodeMirror.Pos(pos, 0); }
-            var rf = this.getHelper(pos, "fold") || indentFold;
-            return rf;
+            return doFold(this, pos, null, "unfold");
         });
 
         CodeMirror.registerHelper("fold", "combine", function () {
@@ -104,17 +92,54 @@ define(function (require, exports, module) {
                 var i;
                 for (i = 0; i < funcs.length; ++i) {
                     var found = funcs[i] && funcs[i](cm, start);
-                    if (found) { return found; }
+                    if (found) {
+                        return found;
+                    }
                 }
             };
         });
-        
+
         CodeMirror.defineExtension("isFolded", function (line) {
-            var marks = this.findMarksAt(CodeMirror.Pos(line)), i;
+            var marks = this.findMarksAt(CodeMirror.Pos(line)),
+                i;
             for (i = 0; i < marks.length; ++i) {
                 if (marks[i].__isFold && marks[i].find().from.line === line) {
                     return true;
                 }
+            }
+        });
+
+        CodeMirror.commands.toggleFold = function (cm) {
+            cm.foldCode(cm.getCursor());
+        };
+        CodeMirror.commands.fold = function (cm) {
+            cm.foldCode(cm.getCursor(), null, "fold");
+        };
+        CodeMirror.commands.unfold = function (cm) {
+            cm.foldCode(cm.getCursor(), null, "unfold");
+        };
+        CodeMirror.commands.foldAll = function (cm) {
+            cm.operation(function () {
+                var i, e;
+                for (i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
+                    cm.foldCode(CodeMirror.Pos(i, 0), null, "fold");
+                }
+            });
+        };
+        CodeMirror.commands.unfoldAll = function (cm) {
+            cm.operation(function () {
+                var i, e;
+                for (i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
+                    cm.foldCode(CodeMirror.Pos(i, 0), null, "unfold");
+                }
+            });
+        };
+
+        CodeMirror.registerHelper("fold", "auto", function (cm, start) {
+            var helpers = cm.getHelpers(start, "fold"), i, cur;
+            for (i = 0; i < helpers.length; i++) {
+                cur = helpers[i](cm, start);
+                if (cur) { return cur; }
             }
         });
     };
