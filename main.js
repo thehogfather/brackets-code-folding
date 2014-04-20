@@ -61,12 +61,20 @@ define(function (require, exports, module) {
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
     
+    //still using slightly modified versions of the foldcode.js and foldgutter.js since we
+    //need to modify the gutter click handler to take care of some collapse and expand features
+    //e.g. collapsing all children when 'alt' key is pressed
     require("foldhelpers/foldcode")();
     require("foldhelpers/foldgutter")();
-    
+
     var indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold");
 
+    //register a global fold helper based on indentation folds
+    CodeMirror.registerGlobalHelper("fold", "indent", function (mode, cm) {
+        return true;
+    }, indentFold);
+    
     CodeMirror.registerHelper("fold", "stex", latexFold);
     
 	//gets the linefolds saved for the current document in the preference store
@@ -141,7 +149,7 @@ define(function (require, exports, module) {
             }
         } else {
             if (event.altKey) {
-                var rf = cm.foldRangeFinder(pos);
+                var rf = CodeMirror.fold.auto;
                 range = rf(cm, pos);
                 if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
@@ -186,12 +194,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror, range;
-            var _lineFolds = _prefs.get(editor.document.file.fullPath);
-            for (i = editor.getLastVisibleLine(); i >= editor.getFirstVisibleLine(); i--) {
-                if (!cm.isFolded(i)) {
-                    cm.foldCode(i);
-                }
-            }
+            CodeMirror.commands.foldAll(cm);
         }
     }
 
@@ -199,9 +202,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror;
-            for (i = editor.getFirstVisibleLine(); i < editor.getLastVisibleLine(); i++) {
-                if (cm.isFolded(i)) { cm.unfoldCode(i + 1); }
-            }
+            CodeMirror.commands.unfoldAll(cm);
         }
     }
 	

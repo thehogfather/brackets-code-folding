@@ -22,7 +22,11 @@ The following are the default keyboard shortcut keys for the code-folding extens
     Shift-Alt-1 Expand all code regions in current editor
 
 ##Known Issues
+#### Conflicting keyboard shortcuts
 **If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, please use an extension like [Brackets Key Remapper](https://bitbucket.org/sacah/brackets-key-remapper) to change the shortcut keys to suit your needs.**
+
+#### EdgeCode support
+If you are running edge code, please the latest compatible version is [v0.2.7](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7). Please download and install from [this url](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7).
 
 ### License
 MIT-licensed.
