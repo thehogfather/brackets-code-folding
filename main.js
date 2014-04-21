@@ -142,10 +142,10 @@ define(function (require, exports, module) {
             if (event.altKey) {//unfold code including children
                 range = _lineFolds[line];
                 for (i = range.to.line; i >=  range.from.line; i--) {
-                    if (cm.isFolded(i)) { cm.unfoldCode(i + 1); }
+                    if (cm.isFolded(i)) { cm.unfoldCode(i); }
                 }
             } else {
-                cm.unfoldCode(line + 1);
+                cm.unfoldCode(line);
             }
         } else {
             if (event.altKey) {
@@ -186,7 +186,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor) {
             var cursor = editor.getCursorPos(), cm = editor._codeMirror;
-            cm.unfoldCode(cursor.line + 1);
+            cm.unfoldCode(cursor.line);
         }
     }
     
