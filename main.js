@@ -76,12 +76,6 @@ define(function (require, exports, module) {
     }, indentFold);
     
     CodeMirror.registerHelper("fold", "stex", latexFold);
-    
-	//gets the linefolds saved for the current document in the preference store
-    function getLineFolds(path) {
-        if (!_prefs.get(path)) { _prefs.set(path,  []); }
-        return _prefs.get(path);
-    }
 	
     /** gets the folded regions in the editor.
 	 * @returns a map containing {linenumber: {from, to}}
@@ -107,7 +101,7 @@ define(function (require, exports, module) {
             var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
-            var folds = getLineFolds(path), vp = cm.getViewport();
+            var folds = _prefs.get(path), vp = cm.getViewport();
             if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
                 folds.forEach(function (line) {
                     cm.foldCode(line);
@@ -137,9 +131,10 @@ define(function (require, exports, module) {
         var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
-        var _lineFolds = _prefs.get(editor.document.file.fullPath);
+        var _lineFolds;
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
+                _lineFolds = _prefs.get(editor.document.file.fullPath);
                 range = _lineFolds[line];
                 for (i = range.to.line; i >=  range.from.line; i--) {
                     if (cm.isFolded(i)) { cm.unfoldCode(i); }

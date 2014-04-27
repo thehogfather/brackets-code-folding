@@ -8,20 +8,42 @@
 define(function (require, exports, module) {
     "use strict";
     var PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
-        _newAPI                 = PreferencesManager.getExtensionPrefs ? true : false,
-        _prefs                  = _newAPI ? PreferencesManager.getExtensionPrefs("code-folding") :
-                PreferencesManager.getPreferenceStorage(module),
+        _prefs                  = PreferencesManager.getExtensionPrefs("code-folding"),
+        stateManager            = PreferencesManager.stateManager.getPrefixedSystem("code-folding"),
         store = {},
         folds = "folds";
     
+    function simplify(folds) {
+        if (!folds) { return folds; }
+        var res = {}, range;
+        Object.keys(folds).map(function (line) {
+            range = folds[line];
+            res[line] = Array.isArray(range) ? range : [[range.from.line, range.from.ch], [range.to.line, range.to.ch]];
+        });
+        return res;
+    }
+    
+    function inflate(folds) {
+        if (!folds) { return folds; }
+         //transform the folds into objects with from and to properties while gracefully upgrading old preferences
+        var ranges = {}, obj;
+        Object.keys(folds).forEach(function (line) {
+            obj = folds[line];
+            ranges[line] = typeof obj === "object" ? obj : {from: {line: obj[0][0], ch: obj[0][1]}, to: {line: obj[1][0], ch: obj[1][1]}};
+        });
+        
+        return ranges;
+    }
+    
     module.exports = {
         get: function (id) {
-            store = _newAPI ? (_prefs.get(folds) || {}) : (_prefs.getValue(folds) || {});
-            return store[id];
+            store = (stateManager.get(folds) || {});
+            return inflate(store[id]);
         },
         set: function (id, value) {
-            store[id] = value;
-            return _newAPI ? _prefs.set(folds, store) : _prefs.setValue(folds, store);
+            store[id] = simplify(value);
+            stateManager.set(folds, store);
+            stateManager.save();
         }
     };
 
