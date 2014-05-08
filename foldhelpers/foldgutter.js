@@ -9,7 +9,7 @@
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-
+    var minFoldSize = 2;
     module.exports = function () {
         function State(options) {
             this.options = options;
@@ -51,7 +51,7 @@ define(function (require, exports, module) {
                     var pos = CodeMirror.Pos(cur, 0),
                         func = opts.rangeFinder || CodeMirror.fold.auto;// new CodeMirror.fold.combine(cm.foldRangeFinder(pos), CodeMirror.fold.comment);
                     var range = func && func(cm, pos);
-                    if (range && range.from.line < range.to.line) {
+                    if (range && range.to.line - range.from.line >= minFoldSize) {
                         mark = marker(opts.indicatorOpen);
                     }
                 }

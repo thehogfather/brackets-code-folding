@@ -18,7 +18,7 @@ define(function (require, exports, module) {
             }
             //combine the foldhelper for the current mode with the comment fold helper
             var finder = CodeMirror.fold.auto;
-            var minSize = (options && options.minFoldSize) || 1;
+            var minSize = (options && options.minFoldSize) || 2;
 
             function getRange(allowFolded) {
                 var range = finder(cm, pos);
@@ -34,6 +34,15 @@ define(function (require, exports, module) {
                         }
                         range.cleared = true;
                         marks[i].clear();
+                    }
+                }
+                //check for overlapping folds
+                var lastMark, foldMarks;
+                if (marks && marks.length) {
+                    foldMarks = marks.filter(function (d) { return d.__isFold; });
+                    lastMark = foldMarks[foldMarks.length - 1].find();
+                    if (lastMark && range.from.line <= lastMark.to.line && lastMark.to.line < range.to.line) {
+                        return null;
                     }
                 }
                 return range;
