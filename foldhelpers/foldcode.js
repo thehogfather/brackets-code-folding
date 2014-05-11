@@ -40,9 +40,11 @@ define(function (require, exports, module) {
                 var lastMark, foldMarks;
                 if (marks && marks.length) {
                     foldMarks = marks.filter(function (d) { return d.__isFold; });
-                    lastMark = foldMarks[foldMarks.length - 1].find();
-                    if (lastMark && range.from.line <= lastMark.to.line && lastMark.to.line < range.to.line) {
-                        return null;
+                    if (foldMarks && foldMarks.length) {
+                        lastMark = foldMarks[foldMarks.length - 1].find();
+                        if (lastMark && range.from.line <= lastMark.to.line && lastMark.to.line < range.to.line) {
+                            return null;
+                        }
                     }
                 }
                 return range;
