@@ -42,21 +42,27 @@ define(function (require, exports, module) {
         }
 
         function updateFoldInfo(cm, from, to) {
-            var opts = cm.state.foldGutter.options, cur = from;
+            var opts = cm.state.foldGutter.options;
             cm.eachLine(from, to, function (line) {
                 var mark = marker("CodeMirror-foldgutter-blank");
-                if (isFolded(cm, cur)) {
-                    mark = marker(opts.indicatorFolded);
+                var pos = CodeMirror.Pos(line.lineNo()),
+                        func = opts.rangeFinder || CodeMirror.fold.auto;
+                var range = func && func(cm, pos);
+                if (isFolded(cm, line.lineNo())) {
+                    //expand fold if invalid
+                    if (range){
+                        mark = marker(opts.indicatorFolded);
+                    } else {
+                        cm.findMarksAt(pos).filter(function (m) {
+                            return m.__isFold;
+                        }).forEach(function (m) { m.clear(); });
+                    }
                 } else {
-                    var pos = CodeMirror.Pos(cur, 0),
-                        func = opts.rangeFinder || CodeMirror.fold.auto;// new CodeMirror.fold.combine(cm.foldRangeFinder(pos), CodeMirror.fold.comment);
-                    var range = func && func(cm, pos);
                     if (range && range.to.line - range.from.line >= minFoldSize) {
                         mark = marker(opts.indicatorOpen);
                     }
                 }
                 cm.setGutterMarker(line, opts.gutter, mark);
-                ++cur;
             });
         }
 
