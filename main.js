@@ -60,7 +60,6 @@ define(function (require, exports, module) {
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
-    //brackets.getModule(["thirdparty/CodeMirror2/addon/fold/region-fold"]);
     
     //still using slightly modified versions of the foldcode.js and foldgutter.js since we
     //need to modify the gutter click handler to take care of some collapse and expand features
