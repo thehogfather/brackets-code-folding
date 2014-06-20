@@ -60,6 +60,7 @@ define(function (require, exports, module) {
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/markdown-fold"]);
+    //brackets.getModule(["thirdparty/CodeMirror2/addon/fold/region-fold"]);
     
     //still using slightly modified versions of the foldcode.js and foldgutter.js since we
     //need to modify the gutter click handler to take care of some collapse and expand features
@@ -68,12 +69,17 @@ define(function (require, exports, module) {
     require("foldhelpers/foldgutter")();
 
     var indentFold              = require("foldhelpers/indentFold"),
-        latexFold               = require("foldhelpers/latex-fold");
+        latexFold               = require("foldhelpers/latex-fold"),
+        regionFold              = require("foldhelpers/region-fold");
 
     //register a global fold helper based on indentation folds
     CodeMirror.registerGlobalHelper("fold", "indent", function (mode, cm) {
         return true;
     }, indentFold);
+    
+    CodeMirror.registerGlobalHelper("fold", "region", function (mode, cm) {
+        return true;
+    }, regionFold);
     
     CodeMirror.registerHelper("fold", "stex", latexFold);
 	
