@@ -10,15 +10,10 @@ module.exports = function(cm,start)
 {
   var line = start.line, lineText = cm.getLine(line);
   var startCh, tokenType;
-
-  console.log(cm);
-  console.log(start);
-  console.log(line);
-  console.log(lineText);
   
   function findOpening(openCh) 
   {
-    for (var at = start.ch, pass = 0;;) 
+    for (var at = 0, pass = 0;;) 
     {
       var found = at <= 0 ? -1 : lineText.lastIndexOf(openCh, at - 1);
       if (found == -1) {
@@ -27,22 +22,22 @@ module.exports = function(cm,start)
         at = lineText.length;
         continue;
       }
-      if (pass == 1 && found < start.ch) break;
+      if (pass == 1 && found < 0) break;
       tokenType = cm.getTokenTypeAt(CodeMirror.Pos(line, found + 1));
       return found;
     }
   }
-
-  var startToken = "//Region", endToken = "//Endregion", startCh = findOpening("//Region");
-  if(startCh == null)
-  {
-    var startToken = "<!--Region", endToken = "<!--Endregion", startCh = findOpening("<!--Region");
-  }
+  if(lineText.indexOf('/* ') <= -1 && lineText.indexOf('<!-- ') <= -1) return;
+  else if(lineText.indexOf('/* ') > -1)
+    var startToken = "/* "+lineText.substring(lineText.lastIndexOf("/* ")+3,lineText.indexOf(" */")), endToken = '/* END '+lineText.substring(lineText.lastIndexOf("/* ")+3,lineText.indexOf(" */")), startCh = findOpening('/* ');
+  else if(lineText.indexOf('<!-- ') > -1)
+    var startToken = "<!-- "+lineText.substring(lineText.lastIndexOf("<!-- ")+5,lineText.indexOf(" -->")), endToken = '<!-- END '+lineText.substring(lineText.lastIndexOf("<!-- ")+5,lineText.indexOf(" -->")), startCh = findOpening('<!-- ');
+  
   if (startCh == null) return;
-  startCh += (lineText.length+2);
+  startCh += (lineText.length);
   var count = 1, lastLine = cm.lastLine(), end, endCh;
-  outer: for (var i = line; i <= lastLine; ++i) {
-    var text = cm.getLine(i), pos = i == line ? startCh : 0;
+  outer: for (var i = (line+1); i <= lastLine; ++i) {
+    var text = cm.getLine(i), pos = 0;
     for (;;) {
       var nextOpen = text.indexOf(startToken, pos), nextClose = text.indexOf(endToken, pos);
       if (nextOpen < 0) nextOpen = text.length;
@@ -60,5 +55,4 @@ module.exports = function(cm,start)
   return {from: CodeMirror.Pos(line, startCh),
           to: CodeMirror.Pos(end, endCh)};
 }
-
 });
