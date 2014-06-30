@@ -27,8 +27,8 @@
 /*global define */
 
 define({
-    "CollapseAll"       :   "Collapse All",
-    "ExpandAll"         :   "Expand All",
-    "CollapseCurrent"   :   "Collapse Current",
-    "ExpandCurrent"     :   "Expand Current",
+    "CollapseAll"       :   "Collassa tutto",
+    "ExpandAll"         :   "Espandi tutto",
+    "CollapseCurrent"   :   "Collassa",
+    "ExpandCurrent"     :   "Espandi",
 });
