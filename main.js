@@ -162,7 +162,8 @@ define(function (require, exports, module) {
         }
     }
     /**
-		Collapses the code region nearest the current cursor position. Nearest is found by searching from the current line and moving up the document until an
+		Collapses the code region nearest the current cursor position.
+		Nearest is found by searching from the current line and moving up the document until an
 		opening code-folding region is found.
 	 */
     function collapseCurrent() {
