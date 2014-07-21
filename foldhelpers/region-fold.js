@@ -14,6 +14,9 @@ define(function (require, exports, module) {
         var line = start.line;
         var startCh = 0, stack = [], token;
         var lastLine = cm.lastLine(), end, endCh, nextOpen, nextClose;
+		//no need to fold on single line files
+		if (line === lastLine) { return; }
+
         for (var i = line; i <= lastLine; ++i) {
             var text = cm.getLine(i), pos = startCh;
             for (var j = pos; j < text.length; ) {

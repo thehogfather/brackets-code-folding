@@ -1,4 +1,7 @@
 #Changelog
+##0.2.17
+* BUGFIX - fixed issue #78 - region fold causes brackets IDE to freeze when opening certain minified javascript files.
+
 ##0.2.16
 * Added Italian translation [Denisov21](https://github.com/Denisov21)
 * Update to Spanish translation [JJBocanegra](https://github.com/JJBocanegra)
