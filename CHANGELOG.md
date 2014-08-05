@@ -1,4 +1,6 @@
 #Changelog
+##0.2.18
+* Added Galician translation [ivarcia ](https://github.com/ivarcia)
 ##0.2.17
 * BUGFIX - fixed issue #78 - region fold causes brackets IDE to freeze when opening certain minified javascript files.
 
