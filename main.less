@@ -1,5 +1,22 @@
-.CodeMirror-foldgutter-open:after {
+@width: 1em;
+
+.CodeMirror-foldgutter-endrange, .CodeMirror-foldgutter, .CodeMirror-foldgutter-open, .CodeMirror-foldgutter, .CodeMirror-foldgutter-folded, .CodeMirror-foldgutter-blank {
+    color: #ccc;
+    width: @width;
+    cursor: default;
+}
+
+.CodeMirror-foldgutter-range:after {
+	background: #eee;
+	color: #eee;
+	content: "|";
+	width: @width;
+	cursor: default;
+}
+
+.CodeMirror-foldgutter-open:after, .CodeMirror-foldgutter-beginrange:after {
     content: "\25bc";
+	color: #aaa;
     font-size: 15px;
 }
 .CodeMirror-foldgutter-folded:after {
@@ -7,11 +24,13 @@
     font-size: 15px;
 }
 
-.CodeMirror-foldgutter, .CodeMirror-foldgutter-open, .CodeMirror-foldgutter, .CodeMirror-foldgutter-folded, .CodeMirror-foldgutter-blank {
-    color: #ccc;
-    width: 15px;
-    cursor: default;
+.CodeMirror-foldgutter-endrange:after {
+	content: "\25b2";
+	color: #aaa;
+	font-size: 15px;
 }
+
+
 
 .CodeMirror-foldmarker {
     padding-right: 5px;

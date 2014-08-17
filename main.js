@@ -26,7 +26,7 @@
  * @date 10/24/13 9:35:26 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, d3, require, $, brackets, window, MouseEvent */
+/*global define, d3, require, $, brackets, document, clearTimeout, setTimeout */
 
 require.config({
     paths: {
@@ -65,8 +65,9 @@ define(function (require, exports, module) {
     //need to modify the gutter click handler to take care of some collapse and expand features
     //e.g. collapsing all children when 'alt' key is pressed
     require("foldhelpers/foldcode")();
-    require("foldhelpers/foldgutter")();
-
+	var foldgutterHelper = require("foldhelpers/foldgutter")();
+	var gutterName = "CodeMirror-foldgutter";
+	
     var indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold"),
         regionFold              = require("foldhelpers/region-fold");
@@ -160,6 +161,7 @@ define(function (require, exports, module) {
                 cm.foldCode(line);
             }
         }
+		foldgutterHelper.updateRange(cm, line);
     }
     /**
 		Collapses the code region nearest the current cursor position.
@@ -210,18 +212,45 @@ define(function (require, exports, module) {
 	function registerHandlers(editor) {
 		var cm = editor._codeMirror;
 		if (cm) {
-			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
-            _lineFolds = _lineFolds || {};
-            cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
-            cm.setOption("foldGutter", {onGutterClick: onGutterClick});
-            cm.on("fold", function (cm, from, to) {
-                _lineFolds[from.line] = {from: from, to: to};
-                _prefs.set(path, _lineFolds);
-            });
-            cm.on("unfold", function (cm, from, to) {
-                delete _lineFolds[from.line];
-                _prefs.set(path, _lineFolds);
-            });
+			var previousLine;
+			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path), timerid;
+			_lineFolds = _lineFolds || {};
+			var gutters = cm.getOption("gutters").map(function (d) { return d; });
+			if (gutters.indexOf(gutterName) < 0) {
+				gutters.push(gutterName);
+				cm.setOption("gutters", gutters);
+				cm.setOption("foldGutter", {onGutterClick: onGutterClick});
+				cm.on("fold", function (cm, from, to) {
+					_lineFolds[from.line] = {from: from, to: to};
+					_prefs.set(path, _lineFolds);
+				});
+				cm.on("unfold", function (cm, from, to) {
+					delete _lineFolds[from.line];
+					_prefs.set(path, _lineFolds);
+				});
+			}
+			
+			var $gutterEl = $(cm.getGutterElement());
+			var gutterMouseMove = function (e) {
+				var line = cm.lineAtHeight(e.pageY, "page");
+				if (line !== previousLine) {
+					previousLine = line;
+					cm.clearGutter("CodeMirror-foldgutter");
+					foldgutterHelper.updateRange(cm, line);
+				}
+			};
+			var gutterMouseOver = function (e) {
+				var line = cm.lineAtHeight(e.pageY, "page") - 1;
+				cm.clearGutter("CodeMirror-foldgutter");
+				foldgutterHelper.updateRange(cm, line);
+				$gutterEl.on("mousemove", gutterMouseMove);
+			};
+			
+			$gutterEl.on("mouseover", gutterMouseOver)
+				.on("mouseout", function (e) {
+					cm.clearGutter("CodeMirror-foldgutter");
+					$gutterEl.off("mousemove", gutterMouseMove);
+				});
 		}
 	}
 	
