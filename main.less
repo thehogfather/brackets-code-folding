@@ -6,18 +6,12 @@
     cursor: default;
 }
 
-.CodeMirror-foldgutter-range:after {
-	background: #eee;
-	color: #eee;
-	content: "|";
-	width: @width;
-	cursor: default;
-}
-
 .CodeMirror-foldgutter-open:after, .CodeMirror-foldgutter-beginrange:after {
     content: "\25bc";
 	color: #aaa;
     font-size: 15px;
+	z-index: 1;
+	position: absolute;
 }
 .CodeMirror-foldgutter-folded:after {
     content: "\25b6";

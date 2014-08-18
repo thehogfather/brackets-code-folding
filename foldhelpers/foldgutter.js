@@ -67,11 +67,13 @@ define(function (require, exports, module) {
 						cm.eachLine(range.from.line, range.to.line, function (line) {
 							if (isFolded(cm, line.lineNo())) {
 								cm.setGutterMarker(line, opts.gutter, marker(opts.indicatorFolded));
-							} else {
-								cm.setGutterMarker(line, opts.gutter, marker(opts.indicatorRange));
 							}
+//							} else {
+//								cm.setGutterMarker(line, opts.gutter, marker(opts.indicatorRange));
+//							}
 						});
 					});
+					cm.setGutterMarker(range.to.line, opts.gutter, marker(opts.endRange));
 				}
 			}
 			cm.setGutterMarker(range.from.line, opts.gutter, mark);
@@ -89,7 +91,7 @@ define(function (require, exports, module) {
             });
         }
 
-		function updateRange(cm, line) {
+		function getContainingRange(cm, line) {
 			//derive the range based on the current line - assume that if the current line itself is not
 			//an fold range start, then need to look above it to find  the first range that contains the current line
 			var opts = cm.state.foldGutter.options;
@@ -97,16 +99,23 @@ define(function (require, exports, module) {
 				func = opts.rangeFinder || CodeMirror.fold.auto;
 			var range = func && func(cm, pos);
 			if (range && Math.abs(range.from.line - range.to.line) > minFoldSize) {
-				return markRange(cm, range);
+				return range;
 			} else {
 				var i = line - 1;
 				for (i = line - 1; i >= 0; i--) {
 					range = func && func(cm, CodeMirror.Pos(i));
 					if (range && Math.abs(range.from.line - range.to.line) > minFoldSize &&
 						range.from.line < line && line <= range.to.line) {
-						return markRange(cm, range);
+						return range;
 					}
 				}
+			}
+		}
+		
+		function updateRange(cm, line) {
+			var range = getContainingRange(cm, line);
+			if (range) {
+				markRange(cm, range);
 			}
 		}
 		
@@ -145,7 +154,8 @@ define(function (require, exports, module) {
 		
 		return {
 			updateViewport: updateInViewport,
-			updateRange: updateRange
+			updateRange: updateRange,
+			getContainingRange: getContainingRange
 		};
     };
 });

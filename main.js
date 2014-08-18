@@ -138,6 +138,8 @@ define(function (require, exports, module) {
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
         var _lineFolds;
+		
+		
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
                 _lineFolds = _prefs.get(editor.document.file.fullPath);
@@ -149,16 +151,17 @@ define(function (require, exports, module) {
                 cm.unfoldCode(line);
             }
         } else {
+			range = foldgutterHelper.getContainingRange(cm, line);
             if (event.altKey) {
-                var rf = CodeMirror.fold.auto;
-                range = rf(cm, pos);
-                if (range) {
+//                var rf = CodeMirror.fold.auto;
+//                range = rf(cm, pos);
+//                if (range) {
                     for (i = range.to.line; i >=  range.from.line; i--) {
                         if (!cm.isFolded(i)) { cm.foldCode(i); }
                     }
-                }
+//                }
             } else {
-                cm.foldCode(line);
+                cm.foldCode(range.from.line);
             }
         }
 		foldgutterHelper.updateRange(cm, line);
