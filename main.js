@@ -238,20 +238,20 @@ define(function (require, exports, module) {
 				var line = cm.lineAtHeight(e.pageY, "page");
 				if (line !== previousLine) {
 					previousLine = line;
-					cm.clearGutter("CodeMirror-foldgutter");
+					foldgutterHelper.clearGutter(cm);
 					foldgutterHelper.updateRange(cm, line);
 				}
 			};
 			var gutterMouseOver = function (e) {
 				var line = cm.lineAtHeight(e.pageY, "page") - 1;
-				cm.clearGutter("CodeMirror-foldgutter");
+				foldgutterHelper.clearGutter(cm);
 				foldgutterHelper.updateRange(cm, line);
 				$gutterEl.on("mousemove", gutterMouseMove);
 			};
 			
 			$gutterEl.on("mouseover", gutterMouseOver)
 				.on("mouseout", function (e) {
-					cm.clearGutter("CodeMirror-foldgutter");
+					foldgutterHelper.clearGutter(cm);
 					$gutterEl.off("mousemove", gutterMouseMove);
 				});
 		}

@@ -68,15 +68,13 @@ define(function (require, exports, module) {
 							if (isFolded(cm, line.lineNo())) {
 								cm.setGutterMarker(line, opts.gutter, marker(opts.indicatorFolded));
 							}
-//							} else {
-//								cm.setGutterMarker(line, opts.gutter, marker(opts.indicatorRange));
-//							}
 						});
 					});
 					cm.setGutterMarker(range.to.line, opts.gutter, marker(opts.endRange));
 				}
 			}
 			cm.setGutterMarker(range.from.line, opts.gutter, mark);
+			cm.setGutterMarker(cm.getCursor().line, opts.gutter, blank);
 		}
 		
         function updateFoldInfo(cm, from, to) {
@@ -119,43 +117,41 @@ define(function (require, exports, module) {
 			}
 		}
 		
-        function updateInViewport(cm) {
-            var vp = cm.getViewport(), state = cm.state.foldGutter;
-            if (!state) { return; }
-            cm.operation(function () {
-                updateFoldInfo(cm, vp.from, vp.to);
-            });
-            state.from = vp.from;
-            state.to = vp.to;
-        }
-
         function onFold(cm, from) {
             var state = cm.state.foldGutter, line = from.line;
             if (line >= state.from && line < state.to) {
                 updateFoldInfo(cm, line, line + 1);
             }
         }
+		
+		function clearGutter(cm) {
+			var opts = cm.state.foldGutter.options;
+			cm.clearGutter("CodeMirror-foldgutter");
+			var blank = marker("CodeMirror-foldgutter-blank");
+			var vp = cm.getViewport();
+			cm.operation(function () {
+				cm.eachLine(vp.from, vp.to, function (line) {
+					cm.setGutterMarker(line.lineNo(), opts.gutter, blank);
+				});
+			});
+		}
          
         CodeMirror.defineOption("foldGutter", false, function (cm, val, old) {
             if (old && old !== CodeMirror.Init) {
                 cm.clearGutter(cm.state.foldGutter.options.gutter);
                 cm.state.foldGutter = null;
                 cm.off("gutterClick", old.onGutterClick);
-//                cm.off("fold", onFold);
-//                cm.off("unfold", onFold);
-            }
+			}
             if (val) {
                 cm.state.foldGutter = new State(parseOptions(val));
                 cm.on("gutterClick", val.onGutterClick);
-//                cm.on("fold", onFold);
-//                cm.on("unfold", onFold);
             }
         });
 		
 		return {
-			updateViewport: updateInViewport,
 			updateRange: updateRange,
-			getContainingRange: getContainingRange
+			getContainingRange: getContainingRange,
+			clearGutter: clearGutter
 		};
     };
 });
