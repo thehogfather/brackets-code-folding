@@ -9,7 +9,8 @@
 /*global define, brackets, document*/
 define(function (require, exports, module) {
     "use strict";
-    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
+    var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror"),
+		prefs = require("Prefs");
 
     module.exports = function () {
         function doFold(cm, pos, options, force) {
@@ -18,7 +19,7 @@ define(function (require, exports, module) {
             }
             //combine the foldhelper for the current mode with the comment fold helper
             var finder = CodeMirror.fold.auto;
-            var minSize = (options && options.minFoldSize) || 2;
+            var minSize = (options && options.minFoldSize) || prefs.getSetting("minFoldSize");
 
             function getRange(allowFolded) {
                 var range = finder(cm, pos);

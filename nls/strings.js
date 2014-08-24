@@ -38,9 +38,9 @@ define(function (require, exports, module) {
     module.exports = {
         root: true,
         "de": true,
-	"es": true,
-	"gl": true,
-	"it": true
+		"es": true,
+		"gl": true,
+		"it": true
     };
 });
 

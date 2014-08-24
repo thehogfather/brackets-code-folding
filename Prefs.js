@@ -10,7 +10,9 @@ define(function (require, exports, module) {
     var PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
         _prefs                  = PreferencesManager.getExtensionPrefs("code-folding"),
         stateManager            = PreferencesManager.stateManager.getPrefixedSystem("code-folding"),
+		DefaultSettings			= require("DefaultSettings"),
         store = {},
+		settings = {},
         folds = "folds";
     
     function simplify(folds) {
@@ -45,7 +47,23 @@ define(function (require, exports, module) {
             store[id] = simplify(value);
             stateManager.set(folds, store);
             stateManager.save();
-        }
+        },
+		getSetting: function (key) {
+			settings = (stateManager.get("settings") || DefaultSettings);
+			return settings[key];
+		},
+		setSetting: function (key, value) {
+			settings[key] = value;
+			stateManager.set("settings", settings);
+			stateManager.save();
+		},
+		getAllSettings: function () {
+			var res = {}, self = this;
+			Object.keys(DefaultSettings).forEach(function (key) {
+				res[key] = self.getSetting(key);
+			});
+			return res;
+		}
     };
 
 });

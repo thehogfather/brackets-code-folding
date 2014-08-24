@@ -9,7 +9,7 @@
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-    var minFoldSize = 2;
+	var prefs = require("Prefs");
     module.exports = function () {
         function State(options) {
             this.options = options;
@@ -42,6 +42,7 @@ define(function (require, exports, module) {
         }
 
         function updateFoldInfo(cm, from, to) {
+			var minFoldSize = prefs.getSetting("minFoldSize") || 2;
             var opts = cm.state.foldGutter.options;
             cm.eachLine(from, to, function (line) {
                 var mark = marker("CodeMirror-foldgutter-blank");

@@ -1,4 +1,7 @@
 #Changelog
+##0.2.19
+* Added Settings dialog for configuring the extension
+
 ##0.2.18
 * Added Galician translation [ivarcia ](https://github.com/ivarcia)
 ##0.2.17

@@ -52,7 +52,9 @@ define(function (require, exports, module) {
         COLLAPSE_ALL            = "codefolding.collapse.all",
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
-        EXPAND_ALL              = "codefolding.expand.all";
+        EXPAND_ALL              = "codefolding.expand.all",
+		CODE_FOLDING_SETTINGS	= "codefolding.settings",
+		SettingsDialog			= require("SettingsDialog");
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
@@ -73,11 +75,11 @@ define(function (require, exports, module) {
 
     //register a global fold helper based on indentation folds
     CodeMirror.registerGlobalHelper("fold", "indent", function (mode, cm) {
-        return true;
+        return _prefs.getSetting("alwaysUseIndentFold");
     }, indentFold);
     
     CodeMirror.registerGlobalHelper("fold", "region", function (mode, cm) {
-        return true;
+        return _prefs.getSetting("enableRegionFolding");
     }, regionFold);
     
     CodeMirror.registerHelper("fold", "stex", latexFold);
@@ -102,7 +104,8 @@ define(function (require, exports, module) {
 	
 	/**Restores the linefolds in the editor using values fetched from the preference store*/
     function restoreLineFolds(editor) {
-        if (editor) {
+		var saveFolds = _prefs.getSetting("saveFoldStates");
+        if (editor && saveFolds) {
             var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
@@ -122,7 +125,8 @@ define(function (require, exports, module) {
 	
     /**Saves the line folds in the editor using the preference storage**/
     function saveLineFolds(editor) {
-        if (!editor) { return; }
+		var saveFolds = _prefs.getSetting("saveFoldStates");
+        if (!editor || !saveFolds) { return; }
 		var folds = getLineFoldsInEditor(editor);
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
@@ -237,6 +241,10 @@ define(function (require, exports, module) {
 		saveLineFolds(EditorManager.getCurrentFullEditor());
 	}
 	
+	function showSettingsDialog() {
+		SettingsDialog.show();
+	}
+	
     $(EditorManager).on("activeEditorChange", onActiveEditorChanged);
     $(DocumentManager).on("documentRefreshed", function (event, doc) {
         //restore the folds for this document
@@ -246,14 +254,15 @@ define(function (require, exports, module) {
     $(ProjectManager).on("beforeProjectClose beforeAppClose", saveBeforeClose);
     
     var Strings = require("strings");
-    
-    CommandManager.register(Strings.CollapseAll, COLLAPSE_ALL, collapseAll);
-    CommandManager.register(Strings.ExpandAll, EXPAND_ALL, expandAll);
+    CommandManager.register(Strings.CODE_FOLDING_SETTINGS + "...", CODE_FOLDING_SETTINGS, showSettingsDialog);
+    CommandManager.register(Strings.COLLAPSE_ALL, COLLAPSE_ALL, collapseAll);
+    CommandManager.register(Strings.EXPAND_ALL, EXPAND_ALL, expandAll);
 
-    CommandManager.register(Strings.CollapseCurrent, COLLAPSE, collapseCurrent);
-    CommandManager.register(Strings.ExpandCurrent, EXPAND, expandCurrent);
+    CommandManager.register(Strings.COLLAPSE_CURRENT, COLLAPSE, collapseCurrent);
+    CommandManager.register(Strings.EXPAND_CURRENT, EXPAND, expandCurrent);
     
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
+	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLDING_SETTINGS);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_ALL);
