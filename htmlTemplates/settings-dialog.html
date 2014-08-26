@@ -10,12 +10,12 @@
 					{{MIN_FOLD_SIZE}}
 				</label>	
 				<div class="controls">
-					<input type="number" min="2" id="min-fold-size"/>
+					<input type="number" min="2" id="min-fold-size" pattern="\d+"/>
 				</div>
 			</div>
 			
 			<div class="control-group">
-				<label class="control-label" for="save-fold-states" title={{SAVE_FOLD_STATES_HELP}}>
+				<label class="control-label" for="save-fold-states" title="{{SAVE_FOLD_STATES_HELP}}">
 					{{SAVE_FOLD_STATES}}
 				</label>
 				<div class="controls">
@@ -40,20 +40,7 @@
 			</div>
 		</form>
 
-<!--
-        <label for="remap-keyboard-shortcuts" title="{{REMAP_KEYBOARD_SHORTCUTS}}">{{REMAP_KEYBOARD_SHORTCUTS}}</label>
-		<div class="codefolding-shortcuts">
-			<label>{{COLLAPSE_CURRENT}} <input type="text" id="collapse-current-shortcut"/></label>
-			
-			<label>{{EXPAND_CURRENT}} <input type="text" id="expand-current-shortcut"/></label>
-			
-			<label>{{COLLAPSE_ALL}} <input type="text" id="collapse-all-shortcut"/></label>
-			
-			<label>{{EXPAND_ALL}} <input type="text" id="expand-all-shortcut"/></label>
-		</div>
-		
--->
-    </div>
+   </div>
     <div class="modal-footer">
         <button data-button-id="ok" class="dialog-button btn primary left">{{BUTTON_SAVE}}</button>
         <button data-button-id="defaults" class="dialog-button btn left">{{BUTTON_DEFAULTS}}</button>
