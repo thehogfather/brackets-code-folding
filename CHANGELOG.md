@@ -1,4 +1,7 @@
 #Changelog
+##0.2.20
+* Added French translation [rainje](https://github.com/rainje)
+* Added Russian translation [disshishkov](https://github.com/disshishkov)
 ##0.2.19
 * Added Settings dialog for configuring the extension
 
