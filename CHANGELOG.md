@@ -1,5 +1,6 @@
 #Changelog
 ##0.2.20
+* Improved performance when opening minified files with region folding enabled
 * Added French translation [rainje](https://github.com/rainje)
 * Added Russian translation [disshishkov](https://github.com/disshishkov)
 ##0.2.19

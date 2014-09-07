@@ -7,7 +7,7 @@
 /*global define, require, brackets, Mustache, $ */
 define(function (require, exports, module) {
     "use strict";
-   	var Dialogs = brackets.getModule("widgets/Dialogs"),
+	var Dialogs = brackets.getModule("widgets/Dialogs"),
 		DefaultSettings = require("DefaultSettings"),
 		Strings = require("i18n!nls/strings"),
 		CommandManager = brackets.getModule("command/CommandManager"),
