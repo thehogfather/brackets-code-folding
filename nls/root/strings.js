@@ -32,6 +32,7 @@ define({
     "EXPAND_ALL"         :   "Expand All",
     "COLLAPSE_CURRENT"   :   "Collapse Current",
     "EXPAND_CURRENT"     :   "Expand Current",
+	"COLLAPSE_CUSTOM_REGIONS"	: "Collapse Custom Regions",
 	//form variables region
 	"MIN_FOLD_SIZE"		: 	"Minimum fold size",
 	"MIN_FOLD_SIZE_HELP" : "Minimum number of lines to allow in a fold range",

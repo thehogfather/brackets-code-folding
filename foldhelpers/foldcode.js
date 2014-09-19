@@ -17,8 +17,7 @@ define(function (require, exports, module) {
             if (typeof pos === "number") {
                 pos = CodeMirror.Pos(pos, 0);
             }
-            //combine the foldhelper for the current mode with the comment fold helper
-            var finder = CodeMirror.fold.auto;
+            var finder = (options && options.rangeFinder) || CodeMirror.fold.auto;
             var minSize = (options && options.minFoldSize) || prefs.getSetting("minFoldSize");
 
             function getRange(allowFolded) {
@@ -124,11 +123,11 @@ define(function (require, exports, module) {
         CodeMirror.commands.toggleFold = function (cm) {
             cm.foldCode(cm.getCursor());
         };
-        CodeMirror.commands.fold = function (cm) {
-            cm.foldCode(cm.getCursor(), null, "fold");
+        CodeMirror.commands.fold = function (cm, options, force) {
+            cm.foldCode(cm.getCursor(), options, "fold");
         };
-        CodeMirror.commands.unfold = function (cm) {
-            cm.foldCode(cm.getCursor(), null, "unfold");
+        CodeMirror.commands.unfold = function (cm, options, force) {
+            cm.foldCode(cm.getCursor(), options, "unfold");
         };
         CodeMirror.commands.foldAll = function (cm) {
             cm.operation(function () {

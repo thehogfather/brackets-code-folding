@@ -54,6 +54,7 @@ define(function (require, exports, module) {
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
 		CODE_FOLDING_SETTINGS	= "codefolding.settings",
+		COLLAPSE_CUSTOM_REGIONS = "codefolding.collapse.customregions",
 		SettingsDialog			= require("SettingsDialog");
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
@@ -165,6 +166,25 @@ define(function (require, exports, module) {
             }
         }
     }
+	
+	/**
+		Collapses all custom regions defined in the current editor
+	*/
+	function collapseCustomRegions() {
+		var editor = EditorManager.getFocusedEditor();
+		if (editor) {
+			var cm = editor._codeMirror, i;
+			for (i = cm.firstLine(); i < cm.lastLine(); ) {
+				var range = cm.foldCode(i, {rangeFinder: regionFold});
+				if (range) {
+					i = range.to.line;	
+				} else {
+					i++;	
+				}
+			}
+		}
+	}
+	
     /**
 		Collapses the code region nearest the current cursor position.
 		Nearest is found by searching from the current line and moving up the document until an
@@ -257,6 +277,8 @@ define(function (require, exports, module) {
     CommandManager.register(Strings.CODE_FOLDING_SETTINGS + "...", CODE_FOLDING_SETTINGS, showSettingsDialog);
     CommandManager.register(Strings.COLLAPSE_ALL, COLLAPSE_ALL, collapseAll);
     CommandManager.register(Strings.EXPAND_ALL, EXPAND_ALL, expandAll);
+	
+	CommandManager.register(Strings.COLLAPSE_CUSTOM_REGIONS, COLLAPSE_CUSTOM_REGIONS, collapseCustomRegions);
 
     CommandManager.register(Strings.COLLAPSE_CURRENT, COLLAPSE, collapseCurrent);
     CommandManager.register(Strings.EXPAND_CURRENT, EXPAND, expandCurrent);
@@ -267,6 +289,7 @@ define(function (require, exports, module) {
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_ALL);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
+	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_CUSTOM_REGIONS);
 
     KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-C");
     KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-X");
