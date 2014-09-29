@@ -32,6 +32,7 @@ define({
     "EXPAND_ALL"         :   "Развернуть все",
     "COLLAPSE_CURRENT"   :   "Свернуть текущий",
     "EXPAND_CURRENT"     :   "Развернуть текущий",
+    "COLLAPSE_CUSTOM_REGIONS"	: "Свернуть текущий region",
 	//form variables region
 	"MIN_FOLD_SIZE"      : "Минимальный размер сворачивания",
 	"MIN_FOLD_SIZE_HELP" : "Минимальное число строк для сворачивания",
