@@ -1,6 +1,7 @@
 #Changelog
 ##0.2.21
 * Added menu item for collapsing all custom regions in a document (feature #85)
+* Updated Russian translation
 ##0.2.20
 * Improved performance when opening minified files with region folding enabled
 * Added French translation [rainje](https://github.com/rainje)
