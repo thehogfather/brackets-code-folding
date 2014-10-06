@@ -1,4 +1,6 @@
 #Changelog
+##0.2.22
+* Patch for issue #88 - any space character now allowed before a region fold 
 ##0.2.21
 * Added menu item for collapsing all custom regions in a document (feature #85)
 * Updated Russian translation

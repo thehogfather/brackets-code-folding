@@ -8,7 +8,8 @@ define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror"),
         startRegion = /\W+region/i,
-        endRegion = /\W+endregion/i;
+        endRegion = /\W+endregion/i,
+		space = /\s/;
     
     module.exports = function (cm, start) {
         var line = start.line, i, j;
@@ -21,7 +22,7 @@ define(function (require, exports, module) {
             var text = cm.getLine(i), pos = startCh;
             for (j = pos; j < text.length; true) {
 				//skip all blank lines at begining of test
-				if (text[j] === " ") {
+				if (space.test(text[j])) {
 					j++;
 				} else {
 					token = cm.getTokenAt(CodeMirror.Pos(i, j + 1));
