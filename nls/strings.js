@@ -38,10 +38,11 @@ define(function (require, exports, module) {
     module.exports = {
         root: true,
         "de": true,
-		"es": true,
-		"gl": true,
-		"it": true,
-		"fr": true,
+        "es": true,
+        "fr": true,
+        "gl": true,
+        "it": true,
+        "ja": true,
         "ru": true
     };
 });
