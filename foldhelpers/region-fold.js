@@ -26,23 +26,25 @@ define(function (require, exports, module) {
 					j++;
 				} else {
 					token = cm.getTokenAt(CodeMirror.Pos(i, j + 1));
-					if (token && token.string.length && token.type === "comment") {
-						nextOpen = token.string.toLowerCase().match(startRegion) ? token.end : -1;
-						nextClose = token.string.toLowerCase().match(endRegion) ? token.start : -1;
-						if (nextOpen  > -1) {
-							stack.push(nextOpen);
-						}
-						if (nextClose > -1) {
-							if (stack.length === 1) {
-								endCh = nextClose;
-								end = i;
-								return {from: CodeMirror.Pos(line, stack[0]),
-										 to: CodeMirror.Pos(end, endCh)};
+					if (token) {
+						if (token.string.length && token.type === "comment") {
+							nextOpen = token.string.toLowerCase().match(startRegion) ? token.end : -1;
+							nextClose = token.string.toLowerCase().match(endRegion) ? token.start : -1;
+							if (nextOpen  > -1) {
+								stack.push(nextOpen);
 							}
-							stack.pop();
+							if (nextClose > -1) {
+								if (stack.length === 1) {
+									endCh = nextClose;
+									end = i;
+									return {from: CodeMirror.Pos(line, stack[0]),
+											 to: CodeMirror.Pos(end, endCh)};
+								}
+								stack.pop();
+							}
+						} else {
+							break; //break out of loop if the first non-space character is not a comment	
 						}
-					} else {
-						break; //break out of loop if the first non-space character is not a comment	
 					}
 					j = token ? token.end + 1 : text.length;
 				}
