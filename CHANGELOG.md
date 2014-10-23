@@ -1,4 +1,6 @@
 #Changelog
+##0.2.23
+* Added options to fade fold buttons [vadim-kudr](https://github.com/vadim-kudr)
 ##0.2.22
 * Patch for issue #88 - any space character now allowed before a region fold 
 * Added Japanese translation [lclzd](https://github.com/lclzd)
