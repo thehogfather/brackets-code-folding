@@ -41,6 +41,8 @@ define({
 	"SAVE_FOLD_STATES_HELP" : "Save fold states to disk when editor is closed and restore the folds when reopened",
 	"ALWAYS_USE_INDENT_FOLD": "Always use indent fold",
 	"ALWAYS_USE_INDENT_FOLD_HELP": "Always use level of indentation as a folding guideline",
+	"FADE_FOLD_BUTTONS": "Fade fold buttons",
+	"FADE_FOLD_BUTTONS_HELP": "Hides the fold buttons unless the mouse is over the gutter",
 //	"USE_KEYBOARD_SHORTCUTS": "Use keyboard shortcuts",
 //	"REMAP_KEYBOARD_SHORTCUTS": "Remap keyboard shortcuts",
 	"BUTTON_SAVE": "Save",

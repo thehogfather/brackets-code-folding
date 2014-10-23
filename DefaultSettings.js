@@ -11,7 +11,8 @@ define(function (require, exports, module) {
 		minFoldSize: 2,
 		saveFoldStates: true,
 		alwaysUseIndentFold: true,
-		enableRegionFolding: true
+		enableRegionFolding: true,
+		fadeFoldButtons: false
 //		collapseCurrent: "Ctrl-Alt-C",
 //		useKeyboardShortcuts: true,
 //		expandCurrent: "Ctrl-Alt-X",

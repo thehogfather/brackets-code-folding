@@ -35,6 +35,7 @@ define(function (require, exports, module) {
             if (typeof spec === "string") {
                 var elt = document.createElement("div");
                 elt.className = spec;
+                elt.style.display = 'block';
                 return elt;
             } else {
                 return spec.cloneNode(true);

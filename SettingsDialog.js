@@ -20,6 +20,7 @@ define(function (require, exports, module) {
 		$("#save-fold-states").prop("checked", prefs.saveFoldStates);
 		$("#always-use-indent-fold").prop("checked", prefs.alwaysUseIndentFold);
 		$("#enable-region-folding").prop("checked", prefs.enableRegionFolding);
+		$("#fade-fold-buttons").prop("checked", prefs.fadeFoldButtons);
 	}
 	
 	function restoreDefaults() {
@@ -41,6 +42,7 @@ define(function (require, exports, module) {
 				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));
 				preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
 				preferences.setSetting("enableRegionFolding", $("#enable-region-folding", $dialog).prop("checked"));
+				preferences.setSetting("fadeFoldButtons", $("#fade-fold-buttons", $dialog).prop("checked"));
 				//show reload prompt
 				template = Mustache.render(reloadTemplate, Strings);
 				var reloadDialog = Dialogs.showModalDialogUsingTemplate(template);
