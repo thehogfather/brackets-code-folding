@@ -84,7 +84,8 @@ define(function (require, exports, module) {
     }, regionFold);
     
     CodeMirror.registerHelper("fold", "stex", latexFold);
-	
+	CodeMirror.registerHelper("fold", "django", CodeMirror.helpers.fold.brace);
+	CodeMirror.registerHelper("fold", "tornado", CodeMirror.helpers.fold.brace);
     /** gets the folded regions in the editor.
 	 * @returns a map containing {linenumber: {from, to}}
 	 */
