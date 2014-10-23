@@ -236,13 +236,13 @@ define(function (require, exports, module) {
 		if (cm) {
 			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
-            var foldGutter = {onGutterClick: onGutterClick}
+            var foldGutter = {onGutterClick: onGutterClick};
             if (_prefs.getSetting("fadeFoldButtons")) {
                 foldGutter.indicatorOpen = "CodeMirror-foldgutter-open CodeMirror-foldgutter-faded";
                 foldGutter.indicatorFolded = "CodeMirror-foldgutter-folded CodeMirror-foldgutter-faded";
                 $(cm.getGutterElement()).on({
-                    mouseenter: function () {$('div.CodeMirror-foldgutter-faded').show()},
-                    mouseleave: function () {$('div.CodeMirror-foldgutter-faded').hide()}
+                    mouseenter: function () {$('div.CodeMirror-foldgutter-faded').show();},
+                    mouseleave: function () {$('div.CodeMirror-foldgutter-faded').hide();}
                 });
             }
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);

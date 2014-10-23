@@ -5,7 +5,7 @@
  * @date 10/24/13 10:14:01 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets, document, clearTimeout, setTimeout*/
+/*global define, brackets, document, clearTimeout, setTimeout, $*/
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
@@ -19,8 +19,8 @@ define(function (require, exports, module) {
         function parseOptions(opts) {
             if (opts === true) { opts = {}; }
             if (!opts.gutter) { opts.gutter = "CodeMirror-foldgutter"; }
-            if (!opts.indicatorOpen) { opts.indicatorOpen = "CodeMirror-foldgutter-open"; }
-            if (!opts.indicatorFolded) { opts.indicatorFolded = "CodeMirror-foldgutter-folded"; }
+            if (!opts.indicatorOpen) { opts.indicatorOpen = "CodeMirror-foldgutter-open CodeMirror-foldgutter-faded"; }
+            if (!opts.indicatorFolded) { opts.indicatorFolded = "CodeMirror-foldgutter-folded CodeMirror-foldgutter-faded"; }
             return opts;
         }
     
@@ -35,7 +35,11 @@ define(function (require, exports, module) {
             if (typeof spec === "string") {
                 var elt = document.createElement("div");
                 elt.className = spec;
-                elt.style.display = 'block';
+				if (prefs.getSetting("fadeFoldButtons")) {
+                	elt.style.display = $(".CodeMirror-foldgutter-faded").css("display");
+				} else {
+					elt.style.display = "block";
+				}
                 return elt;
             } else {
                 return spec.cloneNode(true);
