@@ -68,7 +68,7 @@ define(function (require, exports, module) {
     //need to modify the gutter click handler to take care of some collapse and expand features
     //e.g. collapsing all children when 'alt' key is pressed
     require("foldhelpers/foldcode")();
-    require("foldhelpers/foldgutter")();
+    var foldGutter = require("foldhelpers/foldgutter")();
 
     var indentFold              = require("foldhelpers/indentFold"),
         latexFold               = require("foldhelpers/latex-fold"),
@@ -237,17 +237,8 @@ define(function (require, exports, module) {
 		if (cm) {
 			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
-            var foldGutter = {onGutterClick: onGutterClick};
-            if (_prefs.getSetting("fadeFoldButtons")) {
-                foldGutter.indicatorOpen = "CodeMirror-foldgutter-open CodeMirror-foldgutter-faded";
-                foldGutter.indicatorFolded = "CodeMirror-foldgutter-folded CodeMirror-foldgutter-faded";
-                $(cm.getGutterElement()).on({
-                    mouseenter: function () {$('div.CodeMirror-foldgutter-faded').show();},
-                    mouseleave: function () {$('div.CodeMirror-foldgutter-faded').hide();}
-                });
-            }
             cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
-            cm.setOption("foldGutter", foldGutter);
+            cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
                 _lineFolds[from.line] = {from: from, to: to};
                 _prefs.set(path, _lineFolds);
@@ -256,6 +247,12 @@ define(function (require, exports, module) {
                 delete _lineFolds[from.line];
                 _prefs.set(path, _lineFolds);
             });
+            if (_prefs.getSetting("fadeFoldButtons")) {
+                $(cm.getGutterElement()).on({
+                    mouseenter: function () {foldGutter.updateInViewport(cm);},
+                    mouseleave: function () {foldGutter.clearGutter(cm);}
+                });
+            }
 		}
 	}
 	
