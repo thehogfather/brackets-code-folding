@@ -97,7 +97,9 @@ define(function (require, exports, module) {
             var state = cm.state.foldGutter;
             state.from = state.to = 0;
             clearTimeout(state.changeUpdate);
-            state.changeUpdate = setTimeout(function () { updateInViewport(cm); }, 600);
+            state.changeUpdate = setTimeout(function () {
+                updateInViewport(cm);
+            }, prefs.getSetting("foldOnChangeTimeSpan") || 600);
         }
 
         function onViewportChange(cm) {
@@ -119,7 +121,7 @@ define(function (require, exports, module) {
                         }
                     });
                 }
-            }, 400);
+            }, prefs.getSetting("updateViewportTimeSpan") || 400);
         }
 
         function onFold(cm, from) {
