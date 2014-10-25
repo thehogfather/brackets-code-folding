@@ -19,8 +19,8 @@ define(function (require, exports, module) {
         function parseOptions(opts) {
             if (opts === true) { opts = {}; }
             if (!opts.gutter) { opts.gutter = "CodeMirror-foldgutter"; }
-            if (!opts.indicatorOpen) { opts.indicatorOpen = "CodeMirror-foldgutter-open CodeMirror-foldgutter-faded"; }
-            if (!opts.indicatorFolded) { opts.indicatorFolded = "CodeMirror-foldgutter-folded CodeMirror-foldgutter-faded"; }
+            if (!opts.indicatorOpen) { opts.indicatorOpen = "CodeMirror-foldgutter-open"; }
+            if (!opts.indicatorFolded) { opts.indicatorFolded = "CodeMirror-foldgutter-folded"; }
             return opts;
         }
     
@@ -35,11 +35,6 @@ define(function (require, exports, module) {
             if (typeof spec === "string") {
                 var elt = document.createElement("div");
                 elt.className = spec;
-				if (prefs.getSetting("fadeFoldButtons")) {
-                	elt.style.display = $(".CodeMirror-foldgutter-faded").css("display");
-				} else {
-					elt.style.display = "block";
-				}
                 return elt;
             } else {
                 return spec.cloneNode(true);
@@ -49,26 +44,42 @@ define(function (require, exports, module) {
         function updateFoldInfo(cm, from, to) {
 			var minFoldSize = prefs.getSetting("minFoldSize") || 2;
             var opts = cm.state.foldGutter.options;
+            var fade = prefs.getSetting("fadeFoldButtons");
+            var gutter = $(cm.getGutterElement());
             cm.eachLine(from, to, function (line) {
                 var mark = marker("CodeMirror-foldgutter-blank");
                 var pos = CodeMirror.Pos(line.lineNo()),
-                        func = opts.rangeFinder || CodeMirror.fold.auto;
+                    func = opts.rangeFinder || CodeMirror.fold.auto;
                 var range = func && func(cm, pos);
-                if (isFolded(cm, line.lineNo())) {
-                    //expand fold if invalid
-                    if (range){
-                        mark = marker(opts.indicatorFolded);
+                if (!fade || (fade && gutter.is(":hover"))) {
+                    if (isFolded(cm, line.lineNo())) {
+                        //expand fold if invalid
+                        if (range){
+                            mark = marker(opts.indicatorFolded);
+                        } else {
+                            cm.findMarksAt(pos).filter(function (m) {
+                                return m.__isFold;
+                            }).forEach(function (m) { m.clear(); });
+                        }
                     } else {
-                        cm.findMarksAt(pos).filter(function (m) {
-                            return m.__isFold;
-                        }).forEach(function (m) { m.clear(); });
-                    }
-                } else {
-                    if (range && range.to.line - range.from.line >= minFoldSize) {
-                        mark = marker(opts.indicatorOpen);
+                        if (range && range.to.line - range.from.line >= minFoldSize) {
+                            mark = marker(opts.indicatorOpen);
+                        }
                     }
                 }
                 cm.setGutterMarker(line, opts.gutter, mark);
+            });
+        }
+        
+        function clearGutter(cm) {
+            var opts = cm.state.foldGutter.options;
+            cm.clearGutter(opts.gutter);
+            var blank = marker("CodeMirror-foldgutter-blank");
+            var vp = cm.getViewport();
+            cm.operation(function () {
+                cm.eachLine(vp.from, vp.to, function (line) {
+            	    cm.setGutterMarker(line.lineNo(), opts.gutter, blank);
+                });
             });
         }
 
@@ -86,7 +97,9 @@ define(function (require, exports, module) {
             var state = cm.state.foldGutter;
             state.from = state.to = 0;
             clearTimeout(state.changeUpdate);
-            state.changeUpdate = setTimeout(function () { updateInViewport(cm); }, 600);
+            state.changeUpdate = setTimeout(function () {
+                updateInViewport(cm);
+            }, prefs.getSetting("foldOnChangeTimeSpan") || 600);
         }
 
         function onViewportChange(cm) {
@@ -108,7 +121,7 @@ define(function (require, exports, module) {
                         }
                     });
                 }
-            }, 400);
+            }, prefs.getSetting("updateViewportTimeSpan") || 400);
         }
 
         function onFold(cm, from) {
@@ -140,5 +153,10 @@ define(function (require, exports, module) {
                 cm.on("swapDoc", updateInViewport);
             }
         });
+        
+        return {
+            clearGutter: clearGutter,
+            updateInViewport: updateInViewport
+        };
     };
 });
