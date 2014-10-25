@@ -157,6 +157,6 @@ define(function (require, exports, module) {
         return {
             clearGutter: clearGutter,
             updateInViewport: updateInViewport
-        }
+        };
     };
 });
