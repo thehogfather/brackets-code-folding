@@ -21,35 +21,37 @@
  * 
  */
 
-// English - root strings
+// Finnish Translation
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define */
 
 define({
-	"CODE_FOLDING_SETTINGS": "Koodin laskostuksen asetukset",
-    "COLLAPSE_ALL"       :   "Pienennä kaikki",
-    "EXPAND_ALL"         :   "Laajenna kaikki",
-    "COLLAPSE_CURRENT"   :   "Pienennä nykyinen",
-    "EXPAND_CURRENT"     :   "Laajenna nykyinen",
-	"COLLAPSE_CUSTOM_REGIONS"	: "Pienennä mukautetut alueet",
-	//form variables region
-	"MIN_FOLD_SIZE"		: 	"Pienin laskostuksen koko",
-	"MIN_FOLD_SIZE_HELP" : "Pienin sallittu laskostettavan alueen rivimäärä",
-	"ENABLE_REGION_FOLDING": "Ota mukautetun alueen laskostus käyttöön",
-	"SAVE_FOLD_STATES" : "Tallenna laskostuksen tilat",
-	"SAVE_FOLD_STATES_HELP" : "Tallenna laskostuksen tilat levylle, kun editori suljetaan ja palauta ne, kun editori avataan uudelleen",
-	"ALWAYS_USE_INDENT_FOLD": "Käytä aina sisennyslaskostusta",
-	"ALWAYS_USE_INDENT_FOLD_HELP": "Käytä aina sisennyksen tasoa laskostuksen ohjenuorana",
-	"FADE_FOLD_BUTTONS": "Häivytä laskostuspainikkeet",
-	"FADE_FOLD_BUTTONS_HELP": "Piilottaa laskostuspainikkeet, ellei osoitin ole sivumarginaalin päällä",
-//	"USE_KEYBOARD_SHORTCUTS": "Käytä pikanäppäimiä",
-//	"REMAP_KEYBOARD_SHORTCUTS": "Määritä pikanäppäimet uudelleen",
-	"BUTTON_SAVE": "Tallenna",
-	"BUTTON_DEFAULTS": "Palauta oletukset",
-	"BUTTON_CANCEL": "Peruuta",
-	//endregion
-	"CONFIRM_RELOAD_BRACKETS": "Haluatko ladata Bracketsin uudelleen ottaaksesi uudet asetukset käyttöön? Sinua pyydetään tallentamaan muutokset tallentamattomiin dokumentteihin.",
-	"RELOAD_BRACKETS": "Lataa Brackets uudelleen",
-	"BUTTON_RELOAD": "Lataa uudelleen"
+    "CODE_FOLDING_SETTINGS"         : "Koodin laskostuksen asetukset",
+    "COLLAPSE_ALL"                  : "Pienennä kaikki",
+    "EXPAND_ALL"                    : "Laajenna kaikki",
+    "COLLAPSE_CURRENT"              : "Pienennä nykyinen",
+    "EXPAND_CURRENT"                : "Laajenna nykyinen",
+    "COLLAPSE_CUSTOM_REGIONS"       : "Pienennä mukautetut alueet",
+
+    // Form variables region
+    "MIN_FOLD_SIZE"                 : "Pienin laskostuksen koko",
+    "MIN_FOLD_SIZE_HELP"            : "Pienin sallittu laskostettavan alueen rivimäärä",
+    "ENABLE_REGION_FOLDING"         : "Ota mukautetun alueen laskostus käyttöön",
+    "SAVE_FOLD_STATES"              : "Tallenna laskostuksen tilat",
+    "SAVE_FOLD_STATES_HELP"         : "Tallenna laskostuksen tilat levylle, kun editori suljetaan ja palauta ne, kun editori avataan uudelleen",
+    "ALWAYS_USE_INDENT_FOLD"        : "Käytä aina sisennyslaskostusta",
+    "ALWAYS_USE_INDENT_FOLD_HELP"   : "Käytä aina sisennyksen tasoa laskostuksen ohjenuorana",
+    "FADE_FOLD_BUTTONS"             : "Häivytä laskostuspainikkeet",
+    "FADE_FOLD_BUTTONS_HELP"        : "Piilottaa laskostuspainikkeet, ellei osoitin ole sivumarginaalin päällä",
+    //"USE_KEYBOARD_SHORTCUTS"      : "Käytä pikanäppäimiä",
+    //"REMAP_KEYBOARD_SHORTCUTS"    : "Määritä pikanäppäimet uudelleen",
+    "BUTTON_SAVE"                   : "Tallenna",
+    "BUTTON_DEFAULTS"               : "Palauta oletukset",
+    "BUTTON_CANCEL"                 : "Peruuta",
+
+    // Endregion
+    "CONFIRM_RELOAD_BRACKETS"       : "Haluatko ladata Bracketsin uudelleen ottaaksesi uudet asetukset käyttöön? Sinua pyydetään tallentamaan muutokset tallentamattomiin dokumentteihin.",
+    "RELOAD_BRACKETS"               : "Lataa Brackets uudelleen",
+    "BUTTON_RELOAD"                 : "Lataa uudelleen"
 });
