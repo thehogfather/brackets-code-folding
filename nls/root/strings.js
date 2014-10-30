@@ -51,7 +51,7 @@ define({
     "BUTTON_CANCEL"                 : "Cancel",
 
     // Endregion
-    "CONFIRM_RELOAD_BRACKETS"       : "Would you like to reload brackets to apply the new settings? You will be prompted to save changes on unsaved documents.",
+    "CONFIRM_RELOAD_BRACKETS"       : "Would you like to reload Brackets to apply the new settings? You will be prompted to save changes on unsaved documents.",
     "RELOAD_BRACKETS"               : "Reload Brackets",
     "BUTTON_RELOAD"                 : "Reload"
 });
