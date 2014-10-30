@@ -27,29 +27,31 @@
 /*global define */
 
 define({
-	"CODE_FOLDING_SETTINGS": "Code Folding Settings",
-    "COLLAPSE_ALL"       :   "Collapse All",
-    "EXPAND_ALL"         :   "Expand All",
-    "COLLAPSE_CURRENT"   :   "Collapse Current",
-    "EXPAND_CURRENT"     :   "Expand Current",
-	"COLLAPSE_CUSTOM_REGIONS"	: "Collapse Custom Regions",
-	//form variables region
-	"MIN_FOLD_SIZE"		: 	"Minimum fold size",
-	"MIN_FOLD_SIZE_HELP" : "Minimum number of lines to allow in a fold range",
-	"ENABLE_REGION_FOLDING": "Enable custom region folding",
-	"SAVE_FOLD_STATES" : "Save fold states",
-	"SAVE_FOLD_STATES_HELP" : "Save fold states to disk when editor is closed and restore the folds when reopened",
-	"ALWAYS_USE_INDENT_FOLD": "Always use indent fold",
-	"ALWAYS_USE_INDENT_FOLD_HELP": "Always use level of indentation as a folding guideline",
-	"FADE_FOLD_BUTTONS": "Fade fold buttons",
-	"FADE_FOLD_BUTTONS_HELP": "Hides the fold buttons unless the mouse is over the gutter",
-//	"USE_KEYBOARD_SHORTCUTS": "Use keyboard shortcuts",
-//	"REMAP_KEYBOARD_SHORTCUTS": "Remap keyboard shortcuts",
-	"BUTTON_SAVE": "Save",
-	"BUTTON_DEFAULTS": "Restore defaults",
-	"BUTTON_CANCEL": "Cancel",
-	//endregion
-	"CONFIRM_RELOAD_BRACKETS": "Would you like to reload brackets to apply the new settings? You will be prompted to save changes on unsaved documents.",
-	"RELOAD_BRACKETS": "Reload Brackets",
-	"BUTTON_RELOAD": "Reload"
+    "CODE_FOLDING_SETTINGS"         : "Code Folding Settings",
+    "COLLAPSE_ALL"                  : "Collapse All",
+    "EXPAND_ALL"                    : "Expand All",
+    "COLLAPSE_CURRENT"              : "Collapse Current",
+    "EXPAND_CURRENT"                : "Expand Current",
+    "COLLAPSE_CUSTOM_REGIONS"       : "Collapse Custom Regions",
+
+    // Form variables region
+    "MIN_FOLD_SIZE"                 : "Minimum fold size",
+    "MIN_FOLD_SIZE_HELP"            : "Minimum number of lines to allow in a fold range",
+    "ENABLE_REGION_FOLDING"         : "Enable custom region folding",
+    "SAVE_FOLD_STATES"              : "Save fold states",
+    "SAVE_FOLD_STATES_HELP"         : "Save fold states to disk when editor is closed and restore the folds when reopened",
+    "ALWAYS_USE_INDENT_FOLD"        : "Always use indent fold",
+    "ALWAYS_USE_INDENT_FOLD_HELP"   : "Always use level of indentation as a folding guideline",
+    "FADE_FOLD_BUTTONS"             : "Fade fold buttons",
+    "FADE_FOLD_BUTTONS_HELP"        : "Hides the fold buttons unless the mouse is over the gutter",
+    //"USE_KEYBOARD_SHORTCUTS"      : "Use keyboard shortcuts",
+    //"REMAP_KEYBOARD_SHORTCUTS"    : "Remap keyboard shortcuts",
+    "BUTTON_SAVE"                   : "Save",
+    "BUTTON_DEFAULTS"               : "Restore defaults",
+    "BUTTON_CANCEL"                 : "Cancel",
+
+    // Endregion
+    "CONFIRM_RELOAD_BRACKETS"       : "Would you like to reload brackets to apply the new settings? You will be prompted to save changes on unsaved documents.",
+    "RELOAD_BRACKETS"               : "Reload Brackets",
+    "BUTTON_RELOAD"                 : "Reload"
 });
