@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         root: true,
         "de": true,
         "es": true,
+        "fi": true,
         "fr": true,
         "gl": true,
         "it": true,
