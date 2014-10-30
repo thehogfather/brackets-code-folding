@@ -27,8 +27,8 @@
 /*global define */
 
 define({
-    "CollapseAll"       :   "Alle Abschnitte Zuklappen",
-    "ExpandAll"         :   "Alle Abschnitte Aufklappen",
-    "CollapseCurrent"   :   "Abschnitt Zuklappen",
-    "ExpandCurrent"     :   "Abschnitt Aufklappen",
+    "CollapseAll"       : "Alle Abschnitte Zuklappen",
+    "ExpandAll"         : "Alle Abschnitte Aufklappen",
+    "CollapseCurrent"   : "Abschnitt Zuklappen",
+    "ExpandCurrent"     : "Abschnitt Aufklappen",
 });

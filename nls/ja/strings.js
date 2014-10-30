@@ -21,33 +21,35 @@
  * 
  */
 
-// English - root strings
+// Japanese Translation
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define */
 
 define({
-	"CODE_FOLDING_SETTINGS": "折りたたみの設定",
-    "COLLAPSE_ALL"       :   "すべて折りたたむ",
-    "EXPAND_ALL"         :   "すべて展開",
-    "COLLAPSE_CURRENT"   :   "現在のグループを折りたたむ",
-    "EXPAND_CURRENT"     :   "現在のグループを展開",
-	"COLLAPSE_CUSTOM_REGIONS"	: "カスタム領域を折りたたむ",
-	//form variables region
-	"MIN_FOLD_SIZE"		: 	"折りたたみビューを表示する行数の最小値",
-	"MIN_FOLD_SIZE_HELP" : "Minimum number of lines to allow in a fold range",
-	"ENABLE_REGION_FOLDING": "カスタム領域の折りたたみを有効にする",
-	"SAVE_FOLD_STATES" : "折りたたみ状態を保存する",
-	"SAVE_FOLD_STATES_HELP" : "Save fold states to disk when editor is closed and restore the folds when reopened",
-	"ALWAYS_USE_INDENT_FOLD": "常にインデントの折りたたみを使用する",
-	"ALWAYS_USE_INDENT_FOLD_HELP": "折りたたみのガイドラインとして常にインデント レベルを使用します",
-//	"USE_KEYBOARD_SHORTCUTS": "Use keyboard shortcuts",
-//	"REMAP_KEYBOARD_SHORTCUTS": "Remap keyboard shortcuts",
-	"BUTTON_SAVE": "保存",
-	"BUTTON_DEFAULTS": "既定の設定に戻す",
-	"BUTTON_CANCEL": "キャンセル",
-	//endregion
-	"CONFIRM_RELOAD_BRACKETS": "新しい設定を有効にするには、Brackets を再読み込みする必要があります。未保存のドキュメントを、保存または破棄を確認するメッセージが表示されます。",
-	"RELOAD_BRACKETS": "Brackets の再読み込み",
-	"BUTTON_RELOAD": "再読み込み"
+    "CODE_FOLDING_SETTINGS"         : "折りたたみの設定",
+    "COLLAPSE_ALL"                  : "すべて折りたたむ",
+    "EXPAND_ALL"                    : "すべて展開",
+    "COLLAPSE_CURRENT"              : "現在のグループを折りたたむ",
+    "EXPAND_CURRENT"                : "現在のグループを展開",
+    "COLLAPSE_CUSTOM_REGIONS"       : "カスタム領域を折りたたむ",
+
+    // Form variables region
+    "MIN_FOLD_SIZE"                 : "折りたたみビューを表示する行数の最小値",
+    "MIN_FOLD_SIZE_HELP"            : "Minimum number of lines to allow in a fold range",
+    "ENABLE_REGION_FOLDING"         : "カスタム領域の折りたたみを有効にする",
+    "SAVE_FOLD_STATES"              : "折りたたみ状態を保存する",
+    "SAVE_FOLD_STATES_HELP"         : "Save fold states to disk when editor is closed and restore the folds when reopened",
+    "ALWAYS_USE_INDENT_FOLD"        : "常にインデントの折りたたみを使用する",
+    "ALWAYS_USE_INDENT_FOLD_HELP"   : "折りたたみのガイドラインとして常にインデント レベルを使用します",
+    //"USE_KEYBOARD_SHORTCUTS": "Use keyboard shortcuts",
+    //"REMAP_KEYBOARD_SHORTCUTS": "Remap keyboard shortcuts",
+    "BUTTON_SAVE"                   : "保存",
+    "BUTTON_DEFAULTS"               : "既定の設定に戻す",
+    "BUTTON_CANCEL"                 : "キャンセル",
+
+    // Endregion
+    "CONFIRM_RELOAD_BRACKETS"       : "新しい設定を有効にするには、Brackets を再読み込みする必要があります。未保存のドキュメントを、保存または破棄を確認するメッセージが表示されます。",
+    "RELOAD_BRACKETS"               : "Brackets の再読み込み",
+    "BUTTON_RELOAD"                 : "再読み込み"
 });

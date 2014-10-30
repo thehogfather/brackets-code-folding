@@ -21,32 +21,34 @@
  * 
  */
 
-// English - root strings
+// French Translation
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define */
 
 define({
-	"CODE_FOLDING_SETTINGS": "Paramètres Code Folding",
-    "COLLAPSE_ALL"       :   "Tout réduire",
-    "EXPAND_ALL"         :   "Tout développer",
-    "COLLAPSE_CURRENT"   :   "Réduire",
-    "EXPAND_CURRENT"     :   "Développer",
-	//form variables region
-	"MIN_FOLD_SIZE"		 : 	 "Taille de repli minimale",
-	"MIN_FOLD_SIZE_HELP" :   "Nombre de lignes minimal pour proposer un repli",
-	"ENABLE_REGION_FOLDING": "Activer le repli personnalisé de zone",
-	"SAVE_FOLD_STATES" : 	 "Enregistrer l'état des replis",
-	"SAVE_FOLD_STATES_HELP" : "Enregistre l'état des replis sur le disque quand l'éditeur est fermé et les rétablit à sa réouverture",
-	"ALWAYS_USE_INDENT_FOLD": "Toujours utiliser l'indentation du replis",
-	"ALWAYS_USE_INDENT_FOLD_HELP": "Toujours utiliser le niveau d'indentation comme norme de replis",
-	"USE_KEYBOARD_SHORTCUTS": "Utiliser les raccourcis clavier",
-	"REMAP_KEYBOARD_SHORTCUTS": "Redéfinir les raccourcis clavier",
-	"BUTTON_SAVE": "Enregistrer",
-	"BUTTON_DEFAULTS": "Réinitialiser",
-	"BUTTON_CANCEL": "Annuler",
-	//endregion
-	"CONFIRM_RELOAD_BRACKETS": "Souhaitez-vous recharger Brackets pour appliquer les nouveaux paramètres ? Il vous sera demandé de sauvegarder les changements sur les documents ouverts.",
-	"RELOAD_BRACKETS": "Recharger Brackets",
-	"BUTTON_RELOAD": "Recharger"
+    "CODE_FOLDING_SETTINGS"         : "Paramètres Code Folding",
+    "COLLAPSE_ALL"                  : "Tout réduire",
+    "EXPAND_ALL"                    : "Tout développer",
+    "COLLAPSE_CURRENT"              : "Réduire",
+    "EXPAND_CURRENT"                : "Développer",
+
+    // Form variables region
+    "MIN_FOLD_SIZE"                 : "Taille de repli minimale",
+    "MIN_FOLD_SIZE_HELP"            : "Nombre de lignes minimal pour proposer un repli",
+    "ENABLE_REGION_FOLDING"         : "Activer le repli personnalisé de zone",
+    "SAVE_FOLD_STATES"              : "Enregistrer l'état des replis",
+    "SAVE_FOLD_STATES_HELP"         : "Enregistre l'état des replis sur le disque quand l'éditeur est fermé et les rétablit à sa réouverture",
+    "ALWAYS_USE_INDENT_FOLD"        : "Toujours utiliser l'indentation du replis",
+    "ALWAYS_USE_INDENT_FOLD_HELP"   : "Toujours utiliser le niveau d'indentation comme norme de replis",
+    "USE_KEYBOARD_SHORTCUTS"        : "Utiliser les raccourcis clavier",
+    "REMAP_KEYBOARD_SHORTCUTS"      : "Redéfinir les raccourcis clavier",
+    "BUTTON_SAVE"                   : "Enregistrer",
+    "BUTTON_DEFAULTS"               : "Réinitialiser",
+    "BUTTON_CANCEL"                 : "Annuler",
+
+    // Endregion
+    "CONFIRM_RELOAD_BRACKETS"       : "Souhaitez-vous recharger Brackets pour appliquer les nouveaux paramètres ? Il vous sera demandé de sauvegarder les changements sur les documents ouverts.",
+    "RELOAD_BRACKETS"               : "Recharger Brackets",
+    "BUTTON_RELOAD"                 : "Recharger"
 });
