@@ -39,7 +39,7 @@ require.config({
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-    
+    var Strings = require("strings");
     var CommandManager          = brackets.getModule("command/CommandManager"),
         DocumentManager         = brackets.getModule("document/DocumentManager"),
         EditorManager           = brackets.getModule("editor/EditorManager"),
@@ -247,12 +247,17 @@ define(function (require, exports, module) {
                 delete _lineFolds[from.line];
                 _prefs.set(path, _lineFolds);
             });
-            if (_prefs.getSetting("fadeFoldButtons")) {
-                $(cm.getGutterElement()).on({
-                    mouseenter: function () {foldGutter.updateInViewport(cm);},
-                    mouseleave: function () {foldGutter.clearGutter(cm);}
-                });
-            }
+            
+            $(cm.getGutterElement()).on({
+                mouseenter: function () {
+                    foldGutter.updateInViewport(cm);
+                },
+                mouseleave: function () {
+                    if (_prefs.getSetting("fadeFoldButtons")) {
+                        foldGutter.clearGutter(cm);
+                    }
+                }
+            });
 		}
 	}
 	
@@ -269,7 +274,17 @@ define(function (require, exports, module) {
 	}
 	
 	function showSettingsDialog() {
-		SettingsDialog.show();
+		SettingsDialog.show(function () {
+            var editor = EditorManager.getCurrentFullEditor();
+            if (editor) {
+                var cm = editor._codeMirror;
+                if (_prefs.getSetting("fadeFoldButtons")) {
+                    foldGutter.clearGutter(cm);
+                } else {
+                    foldGutter.updateInViewport(cm);   
+                }
+            }
+        });
 	}
 	
     $(EditorManager).on("activeEditorChange", onActiveEditorChanged);
@@ -280,7 +295,6 @@ define(function (require, exports, module) {
     
     $(ProjectManager).on("beforeProjectClose beforeAppClose", saveBeforeClose);
     
-    var Strings = require("strings");
     CommandManager.register(Strings.CODE_FOLDING_SETTINGS + "...", CODE_FOLDING_SETTINGS, showSettingsDialog);
     CommandManager.register(Strings.COLLAPSE_ALL, COLLAPSE_ALL, collapseAll);
     CommandManager.register(Strings.EXPAND_ALL, EXPAND_ALL, expandAll);

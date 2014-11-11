@@ -27,13 +27,13 @@ define(function (require, exports, module) {
 		setFormValues(DefaultSettings);
 	}
 	
-	function showDialog() {
+	function showDialog(cb) {
 		var template = Mustache.render(settingsTemplate, Strings);
 		var dialog = Dialogs.showModalDialogUsingTemplate(template);
 		var useShortcuts;
 		setFormValues(preferences.getAllSettings());
 		
-		dialog.done(function (buttonId) {
+        dialog.done(function (buttonId) {
 			if (buttonId === "ok") {
 				var $dialog = dialog.getElement();
 				var minFoldSize = $("#min-fold-size", $dialog).val();
@@ -43,14 +43,9 @@ define(function (require, exports, module) {
 				preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
 				preferences.setSetting("enableRegionFolding", $("#enable-region-folding", $dialog).prop("checked"));
 				preferences.setSetting("fadeFoldButtons", $("#fade-fold-buttons", $dialog).prop("checked"));
-				//show reload prompt
-				template = Mustache.render(reloadTemplate, Strings);
-				var reloadDialog = Dialogs.showModalDialogUsingTemplate(template);
-				reloadDialog.done(function (buttonId) {
-					if (buttonId === "ok") {
-						CommandManager.execute("debug.refreshWindow");
-					}
-				});
+                if (cb && typeof cb === "function") {
+                    cb();
+                }
 			}
 		});
 	}
