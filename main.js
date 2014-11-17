@@ -54,6 +54,7 @@ define(function (require, exports, module) {
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
 		CODE_FOLDING_SETTINGS	= "codefolding.settings",
+        gutterName              = "CodeMirror-foldgutter",
 		COLLAPSE_CUSTOM_REGIONS = "codefolding.collapse.customregions",
 		SettingsDialog			= require("SettingsDialog");
     
@@ -237,7 +238,10 @@ define(function (require, exports, module) {
 		if (cm) {
 			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
-            cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
+            var gutters = cm.getOption("gutters").slice(0);
+            var lnIndex = gutters.indexOf("CodeMirror-linenumbers");
+            gutters.splice(lnIndex + 1, 0, gutterName);
+            cm.setOption("gutters",  gutters);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
                 _lineFolds[from.line] = {from: from, to: to};
@@ -262,7 +266,7 @@ define(function (require, exports, module) {
 	}
 	
     function onActiveEditorChanged(event, current, previous) {
-		if (current && current._codeMirror.getOption("gutters").indexOf("CodeMirror-foldgutter") === -1) {
+		if (current && current._codeMirror.getOption("gutters").indexOf(gutterName) === -1) {
 			registerHandlers(current);
 			restoreLineFolds(current);
 		}

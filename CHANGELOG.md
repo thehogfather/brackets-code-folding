@@ -1,4 +1,7 @@
 #Changelog
+##0.2.24
+* Addresses issue #103 - code folding plugin no longer overwrites other gutter elements 
+* Added Finish translation [valtlait](https://github.com/valtlait)
 ##0.2.23
 * Added options to fade fold buttons [vadim-kudr](https://github.com/vadim-kudr)
 ##0.2.22
