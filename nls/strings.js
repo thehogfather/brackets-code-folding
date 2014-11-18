@@ -44,6 +44,7 @@ define(function (require, exports, module) {
         "gl": true,
         "it": true,
         "ja": true,
+        "nl": true,
         "ru": true
     };
 });
