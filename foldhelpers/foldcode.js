@@ -137,6 +137,30 @@ define(function (require, exports, module) {
                 }
             });
         };
+        
+        CodeMirror.commands.foldToLevel = function (cm) {
+            var rf = CodeMirror.fold.auto, range;
+            function foldLevel(n, from, to) {
+                if (n > 0) {
+                    var i, e;
+                    for (i = from; i < to; ) {
+                        range = rf(cm, CodeMirror.Pos(i, 0));
+                        if (range) {
+                            cm.foldCode(CodeMirror.Pos(i, 0), null, "fold");
+                            i = range.to.line + 1;
+                            //call fold level for the range just folded
+                            foldLevel(n - 1, range.from.line + 1, range.to.line - 1);
+                        } else {
+                            i++;
+                        }
+                    }
+                }
+            }
+            cm.operation(function () {
+                foldLevel(2, cm.firstLine(), cm.lastLine());
+            });
+        };
+        
         CodeMirror.commands.unfoldAll = function (cm) {
             cm.operation(function () {
                 var i, e;

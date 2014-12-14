@@ -1,7 +1,7 @@
 {
     "title": "Code Folding",
     "name": "brackets-code-folding",
-    "version": "0.2.24",
+    "Version": "0.2.24",
     "author": "Patrick Oladimeji <patrick@dustygem.co.uk>",
     "description": "Brackets extension that provides simple code folding for files edited in brackets. Supports brace folding, tag folding, indent folding and multi-line comment folding",
     "homepage": "https://github.com/thehogfather/brackets-code-folding",
