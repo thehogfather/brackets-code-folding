@@ -37,6 +37,8 @@ define({
     // Form variables region
     "MIN_FOLD_SIZE"                 : "Minimale vouwgrootte",
     "MIN_FOLD_SIZE_HELP"            : "Minimaal aantal regels om toe te staan in een vouwreeks",
+    "MAX_IND"                       : "Maximale vouw inspringen",
+    "MAX_IND_HELP"                  : "Maximale vouw inspringen limiet",
     "ENABLE_REGION_FOLDING"         : "Aangepaste regio's inschakelen",
     "SAVE_FOLD_STATES"              : "Vouwstatus bewaren",
     "SAVE_FOLD_STATES_HELP"         : "Vouwstatus bewaren op schijf als editor gesloten wordt en herstellen wanneer opnieuw geopend",

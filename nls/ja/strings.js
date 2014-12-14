@@ -36,10 +36,12 @@ define({
 
     // Form variables region
     "MIN_FOLD_SIZE"                 : "折りたたみビューを表示する行数の最小値",
-    "MIN_FOLD_SIZE_HELP"            : "Minimum number of lines to allow in a fold range",
+    "MIN_FOLD_SIZE_HELP"            : "行の最小数は倍の範囲でできるようにする",
+    "MAX_IND"                       : "最大倍のインデント",
+    "MAX_IND_HELP"                  : "最大倍のインデントの制限",
     "ENABLE_REGION_FOLDING"         : "カスタム領域の折りたたみを有効にする",
     "SAVE_FOLD_STATES"              : "折りたたみ状態を保存する",
-    "SAVE_FOLD_STATES_HELP"         : "Save fold states to disk when editor is closed and restore the folds when reopened",
+    "SAVE_FOLD_STATES_HELP"         : "エディタが閉じているときにディスクに状態を折る保存し、再度開いたときに折り目を復元",
     "ALWAYS_USE_INDENT_FOLD"        : "常にインデントの折りたたみを使用する",
     "ALWAYS_USE_INDENT_FOLD_HELP"   : "折りたたみのガイドラインとして常にインデント レベルを使用します",
     //"USE_KEYBOARD_SHORTCUTS": "Use keyboard shortcuts",

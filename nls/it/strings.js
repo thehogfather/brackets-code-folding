@@ -30,5 +30,5 @@ define({
     "CollapseAll"       : "Collassa tutto",
     "ExpandAll"         : "Espandi tutto",
     "CollapseCurrent"   : "Collassa",
-    "ExpandCurrent"     : "Espandi",
+    "ExpandCurrent"     : "Espandi"
 });

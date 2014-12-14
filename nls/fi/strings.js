@@ -37,6 +37,8 @@ define({
     // Form variables region
     "MIN_FOLD_SIZE"                 : "Pienin laskostuksen koko",
     "MIN_FOLD_SIZE_HELP"            : "Pienin sallittu laskostettavan alueen rivimäärä",
+    "MAX_IND"                       : "Suurin kertainen sisennys",
+    "MAX_IND_HELP"                  : "Suurin kertainen sisennys raja",
     "ENABLE_REGION_FOLDING"         : "Ota mukautetun alueen laskostus käyttöön",
     "SAVE_FOLD_STATES"              : "Tallenna laskostuksen tilat",
     "SAVE_FOLD_STATES_HELP"         : "Tallenna laskostuksen tilat levylle, kun editori suljetaan ja palauta ne, kun editori avataan uudelleen",

@@ -17,6 +17,7 @@ define(function (require, exports, module) {
 	
 	function setFormValues(prefs) {
 		$("#min-fold-size").val(prefs.minFoldSize || 2);
+		$("#max-ind").val(prefs.maxIndent || 2);
 		$("#save-fold-states").prop("checked", prefs.saveFoldStates);
 		$("#always-use-indent-fold").prop("checked", prefs.alwaysUseIndentFold);
 		$("#enable-region-folding").prop("checked", prefs.enableRegionFolding);
@@ -39,6 +40,9 @@ define(function (require, exports, module) {
 				var minFoldSize = $("#min-fold-size", $dialog).val();
 				preferences.setSetting("minFoldSize", isNaN(minFoldSize) || +minFoldSize === 0 ?
 									   +preferences.getSetting("minFoldSize") : +minFoldSize);
+                var maxind = $("#max-ind", $dialog).val();
+				preferences.setSetting("maxIndent", isNaN(maxind) || +maxind === 0 ?
+									   +preferences.getSetting("maxIndent") : +maxind);
 				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));
 				preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
 				preferences.setSetting("enableRegionFolding", $("#enable-region-folding", $dialog).prop("checked"));

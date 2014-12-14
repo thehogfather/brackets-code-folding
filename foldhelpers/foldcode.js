@@ -10,7 +10,7 @@
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror"),
-		prefs = require("Prefs");
+        prefs = require("Prefs");
 
     module.exports = function () {
         function doFold(cm, pos, options, force) {
@@ -148,12 +148,12 @@ define(function (require, exports, module) {
 
         CodeMirror.registerHelper("fold", "auto", function (cm, start) {
             var helpers = cm.getHelpers(start, "fold"), i, cur;
-			//ensure mode helper is loaded if there is one
-			var mode = cm.getMode().name;
-			var modeHelper = CodeMirror.fold[mode];
-			if (modeHelper && helpers.indexOf(modeHelper) < 0) {
-				helpers.push(modeHelper);
-			}
+            //ensure mode helper is loaded if there is one
+            var mode = cm.getMode().name;
+            var modeHelper = CodeMirror.fold[mode];
+            if (modeHelper && helpers.indexOf(modeHelper) < 0) {
+                helpers.push(modeHelper);
+            }
             for (i = 0; i < helpers.length; i++) {
                 cur = helpers[i](cm, start);
                 if (cur) { return cur; }
