@@ -30,5 +30,5 @@ define({
     "CollapseAll"       : "Contraer Todo",
     "ExpandAll"         : "Expandir Todo",
     "CollapseCurrent"   : "Contraer Sección",
-    "ExpandCurrent"     : "Expandir Sección",
+    "ExpandCurrent"     : "Expandir Sección"
 });

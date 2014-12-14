@@ -37,6 +37,8 @@ define({
     // Form variables region
     "MIN_FOLD_SIZE"                 : "Tamanha Mínimo",
     "MIN_FOLD_SIZE_HELP"            : "Número Mínimo de linhas necessário para o dobramento",
+    "MAX_IND"                       : "Limite de indentação",
+    "MAX_IND_HELP"                  : "Limite máximo de indentação para o dobramento",
     "ENABLE_REGION_FOLDING"         : "Regiões Personalizadas de Dobramento",
     "SAVE_FOLD_STATES"              : "Salvar Dobramentos",
     "SAVE_FOLD_STATES_HELP"         : "Salva o estado atual das dobras quando o editor é fechado e as restaura quando aberto",

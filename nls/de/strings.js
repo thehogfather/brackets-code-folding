@@ -30,5 +30,5 @@ define({
     "CollapseAll"       : "Alle Abschnitte Zuklappen",
     "ExpandAll"         : "Alle Abschnitte Aufklappen",
     "CollapseCurrent"   : "Abschnitt Zuklappen",
-    "ExpandCurrent"     : "Abschnitt Aufklappen",
+    "ExpandCurrent"     : "Abschnitt Aufklappen"
 });

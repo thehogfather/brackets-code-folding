@@ -36,6 +36,8 @@ define({
     // Form variables region
     "MIN_FOLD_SIZE"                 : "Taille de repli minimale",
     "MIN_FOLD_SIZE_HELP"            : "Nombre de lignes minimal pour proposer un repli",
+    "MAX_IND"                       : "Pli indentation maximum",
+    "MAX_IND_HELP"                  : "Limite de retrait de fois maximum",
     "ENABLE_REGION_FOLDING"         : "Activer le repli personnalisé de zone",
     "SAVE_FOLD_STATES"              : "Enregistrer l'état des replis",
     "SAVE_FOLD_STATES_HELP"         : "Enregistre l'état des replis sur le disque quand l'éditeur est fermé et les rétablit à sa réouverture",

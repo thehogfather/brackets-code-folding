@@ -37,6 +37,8 @@ define({
     // Form variables region
     "MIN_FOLD_SIZE"                 : "Minimum fold size",
     "MIN_FOLD_SIZE_HELP"            : "Minimum number of lines to allow in a fold range",
+    "MAX_IND"                       : "Maximum fold indentation",
+    "MAX_IND_HELP"                  : "Maximum fold indentation limit",
     "ENABLE_REGION_FOLDING"         : "Enable custom region folding",
     "SAVE_FOLD_STATES"              : "Save fold states",
     "SAVE_FOLD_STATES_HELP"         : "Save fold states to disk when editor is closed and restore the folds when reopened",
