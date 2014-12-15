@@ -12,11 +12,7 @@ define(function (require, exports, module) {
 		saveFoldStates: true,
 		alwaysUseIndentFold: true,
 		enableRegionFolding: true,
-		fadeFoldButtons: false
-//		collapseCurrent: "Ctrl-Alt-C",
-//		useKeyboardShortcuts: true,
-//		expandCurrent: "Ctrl-Alt-X",
-//		collapseAll: "Alt-1",
-//		expandAll: "Shift-Alt-1"
+		fadeFoldButtons: false,
+        maxFoldLevel: 2 // this value is only used when fold all is called
 	};
 });

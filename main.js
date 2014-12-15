@@ -159,9 +159,7 @@ define(function (require, exports, module) {
                 var rf = CodeMirror.fold.auto;
                 range = rf(cm, pos);
                 if (range) {
-                    for (i = range.to.line; i >=  range.from.line; i--) {
-                        if (!cm.isFolded(i)) { cm.foldCode(i); }
-                    }
+                    CodeMirror.commands.foldToLevel(cm, range.from.line, range.to.line);
                 }
             } else {
                 cm.foldCode(line);

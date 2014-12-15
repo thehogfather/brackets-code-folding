@@ -17,6 +17,7 @@ define(function (require, exports, module) {
 	
 	function setFormValues(prefs) {
 		$("#min-fold-size").val(prefs.minFoldSize || 2);
+        $("#max-fold-level").val(prefs.maxFoldLevel || 2);
 		$("#save-fold-states").prop("checked", prefs.saveFoldStates);
 		$("#always-use-indent-fold").prop("checked", prefs.alwaysUseIndentFold);
 		$("#enable-region-folding").prop("checked", prefs.enableRegionFolding);
@@ -37,10 +38,13 @@ define(function (require, exports, module) {
 			if (buttonId === "ok") {
 				var $dialog = dialog.getElement();
 				var minFoldSize = $("#min-fold-size", $dialog).val();
+                var maxFoldLevel = $("#max-fold-level", $dialog).val();
 				preferences.setSetting("minFoldSize", isNaN(minFoldSize) || +minFoldSize === 0 ?
 									   +preferences.getSetting("minFoldSize") : +minFoldSize);
-				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));
-				preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
+				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));				                
+				preferences.setSetting("maxFoldLevel", isNaN(maxFoldLevel) || +maxFoldLevel === 0 ?
+									   +preferences.getSetting("maxFoldLevel") : +maxFoldLevel);
+                preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
 				preferences.setSetting("enableRegionFolding", $("#enable-region-folding", $dialog).prop("checked"));
 				preferences.setSetting("fadeFoldButtons", $("#fade-fold-buttons", $dialog).prop("checked"));
                 if (cb && typeof cb === "function") {
