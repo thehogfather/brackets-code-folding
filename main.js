@@ -112,7 +112,7 @@ define(function (require, exports, module) {
             var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
-            var folds = _prefs.get(path), vp = cm.getViewport();
+            var folds = cm._lineFolds || _prefs.get(path), vp = cm.getViewport();
             if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
                 folds.forEach(function (line) {
                     cm.foldCode(line);
@@ -130,7 +130,7 @@ define(function (require, exports, module) {
     function saveLineFolds(editor) {
 		var saveFolds = _prefs.getSetting("saveFoldStates");
         if (!editor || !saveFolds) { return; }
-		var folds = getLineFoldsInEditor(editor);
+		var folds = editor._codeMirror._lineFolds; //getLineFoldsInEditor(editor);
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
 			_prefs.set(path, folds);
@@ -146,7 +146,7 @@ define(function (require, exports, module) {
         var _lineFolds;
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
-                _lineFolds = _prefs.get(editor.document.file.fullPath);
+                _lineFolds = cm._lineFolds;// _prefs.get(editor.document.file.fullPath);
                 range = _lineFolds[line];
                 for (i = range.to.line; i >=  range.from.line; i--) {
                     if (cm.isFolded(i)) { cm.unfoldCode(i); }
@@ -236,18 +236,19 @@ define(function (require, exports, module) {
 		if (cm) {
 			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
+            cm._lineFolds = _lineFolds;
             var gutters = cm.getOption("gutters").slice(0);
             var lnIndex = gutters.indexOf("CodeMirror-linenumbers");
             gutters.splice(lnIndex + 1, 0, gutterName);
             cm.setOption("gutters",  gutters);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
             cm.on("fold", function (cm, from, to) {
-                _lineFolds[from.line] = {from: from, to: to};
-                _prefs.set(path, _lineFolds);
+                cm._lineFolds[from.line] = {from: from, to: to};
+//                _prefs.set(path, _lineFolds);
             });
             cm.on("unfold", function (cm, from, to) {
-                delete _lineFolds[from.line];
-                _prefs.set(path, _lineFolds);
+                delete cm._lineFolds[from.line];
+//                _prefs.set(path, _lineFolds);
             });
             
             $(cm.getGutterElement()).on({
