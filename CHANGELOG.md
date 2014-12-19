@@ -1,4 +1,9 @@
 #Changelog
+##0.2.25
+* Added max fold levels to the settings dialog. This improves performance when folding all regions in a document by restricting the level of nesting to a specified number.
+* Updated Russian translation
+* Added portuguese (Brasil) translation [rafaelcastrocouto](https://github.com/rafaelcastrocouto)
+* Added Dutch translation [BBosman](https://github.com/BBosman)
 ##0.2.24
 * Addresses issue #103 - code folding plugin no longer overwrites other gutter elements 
 * Added Finish translation [valtlait](https://github.com/valtlait)
