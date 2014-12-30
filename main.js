@@ -87,6 +87,7 @@ define(function (require, exports, module) {
     CodeMirror.registerHelper("fold", "stex", latexFold);
 	CodeMirror.registerHelper("fold", "django", CodeMirror.helpers.fold.brace);
 	CodeMirror.registerHelper("fold", "tornado", CodeMirror.helpers.fold.brace);
+    
     /** gets the folded regions in the editor.
 	 * @returns a map containing {linenumber: {from, to}}
 	 */
@@ -113,14 +114,10 @@ define(function (require, exports, module) {
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
             var folds = cm._lineFolds || _prefs.get(path), vp = cm.getViewport();
-            if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
-                folds.forEach(function (line) {
-                    cm.foldCode(line);
-                });
-            } else if (folds && (keys = Object.keys(folds)).length) {
+            if (folds && (keys = Object.keys(folds)).length) {
                 var i, range;
                 keys.forEach(function (lineNumber) {
-                    cm.foldCode(+lineNumber, null, "fold");
+                    cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
                 });
             }
         }
@@ -130,7 +127,7 @@ define(function (require, exports, module) {
     function saveLineFolds(editor) {
 		var saveFolds = _prefs.getSetting("saveFoldStates");
         if (!editor || !saveFolds) { return; }
-		var folds = editor._codeMirror._lineFolds; //getLineFoldsInEditor(editor);
+		var folds = editor._codeMirror._lineFolds;
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
 			_prefs.set(path, folds);
@@ -143,16 +140,13 @@ define(function (require, exports, module) {
         var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
-        var _lineFolds;
+        var _lineFolds = cm._lineFolds;
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
-                _lineFolds = cm._lineFolds;// _prefs.get(editor.document.file.fullPath);
                 range = _lineFolds[line];
-                for (i = range.to.line; i >=  range.from.line; i--) {
-                    if (cm.isFolded(i)) { cm.unfoldCode(i); }
-                }
+                CodeMirror.commands.unfoldAll(cm, range.from.line, range.to.line);
             } else {
-                cm.unfoldCode(line);
+                cm.unfoldCode(line, {range: _lineFolds[line]});
             }
         } else {
             if (event.altKey) {
@@ -173,13 +167,13 @@ define(function (require, exports, module) {
 	function collapseCustomRegions() {
 		var editor = EditorManager.getFocusedEditor();
 		if (editor) {
-			var cm = editor._codeMirror, i;
-			for (i = cm.firstLine(); i < cm.lastLine(); ) {
+			var cm = editor._codeMirror, i = cm.firstLine();
+			while (i < cm.lastLine()) {
 				var range = cm.foldCode(i, {rangeFinder: regionFold});
 				if (range) {
-					i = range.to.line;	
+					i = range.to.line;
 				} else {
-					i++;	
+					i++;
 				}
 			}
 		}
@@ -242,18 +236,12 @@ define(function (require, exports, module) {
             gutters.splice(lnIndex + 1, 0, gutterName);
             cm.setOption("gutters",  gutters);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
-            cm.on("fold", function (cm, from, to) {
-                cm._lineFolds[from.line] = {from: from, to: to};
-//                _prefs.set(path, _lineFolds);
-            });
-            cm.on("unfold", function (cm, from, to) {
-                delete cm._lineFolds[from.line];
-//                _prefs.set(path, _lineFolds);
-            });
             
             $(cm.getGutterElement()).on({
                 mouseenter: function () {
-                    foldGutter.updateInViewport(cm);
+                    if (_prefs.getSetting("fadeFoldButtons")) {
+                        foldGutter.updateInViewport(cm);
+                    }
                 },
                 mouseleave: function () {
                     if (_prefs.getSetting("fadeFoldButtons")) {
@@ -284,7 +272,7 @@ define(function (require, exports, module) {
                 if (_prefs.getSetting("fadeFoldButtons")) {
                     foldGutter.clearGutter(cm);
                 } else {
-                    foldGutter.updateInViewport(cm);   
+                    foldGutter.updateInViewport(cm);
                 }
             }
         });

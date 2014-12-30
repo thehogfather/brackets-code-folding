@@ -7,6 +7,7 @@
 /*global define, require, brackets, window */
 define(function (require, exports, module) {
 	"use strict";
+    
 	module.exports = {
 		minFoldSize: 2,
 		saveFoldStates: true,

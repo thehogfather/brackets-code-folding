@@ -14,6 +14,7 @@ define(function (require, exports, module) {
 
     module.exports = function () {
         function doFold(cm, pos, options, force) {
+            force = force || "fold";
             if (typeof pos === "number") {
                 pos = CodeMirror.Pos(pos, 0);
             }
@@ -21,7 +22,7 @@ define(function (require, exports, module) {
             var minSize = (options && options.minFoldSize) || prefs.getSetting("minFoldSize");
 
             function getRange(allowFolded) {
-                var range = finder(cm, pos);
+                var range = options && options.range ? options.range : finder(cm, pos);
                 if (!range || range.to.line - range.from.line < minSize) {
                     return null;
                 }
@@ -69,6 +70,7 @@ define(function (require, exports, module) {
                 }
             }
             if (!range || range.cleared || force === "unfold" || range.to.line - range.from.line < minSize) {
+                if (range) { range.cleared = false; }
                 return;
             }
 
@@ -82,9 +84,17 @@ define(function (require, exports, module) {
                 myRange.clear();
             });
             myRange.on("clear", function (from, to) {
+                delete cm._lineFolds[from.line];
                 CodeMirror.signal(cm, "unfold", cm, from, to);
             });
-            CodeMirror.signal(cm, "fold", cm, range.from, range.to);
+            
+            if (force === "fold") {
+                delete range.cleared;
+                cm._lineFolds[pos.line] = range;
+            } else {
+                delete cm._lineFolds[pos.line];
+            }
+            CodeMirror.signal(cm, force, cm, range.from, range.to);
             return range;
         }
 
@@ -93,8 +103,8 @@ define(function (require, exports, module) {
         });
 
         //define an unfoldCode extension to quickly unfold folded code
-        CodeMirror.defineExtension("unfoldCode", function (pos) {
-            return doFold(this, pos, null, "unfold");
+        CodeMirror.defineExtension("unfoldCode", function (pos, options) {
+            return doFold(this, pos, options, "unfold");
         });
 
         CodeMirror.registerHelper("fold", "combine", function () {
@@ -111,13 +121,7 @@ define(function (require, exports, module) {
         });
 
         CodeMirror.defineExtension("isFolded", function (line) {
-            var marks = this.findMarksAt(CodeMirror.Pos(line)),
-                i;
-            for (i = 0; i < marks.length; ++i) {
-                if (marks[i].__isFold && marks[i].find().from.line === line) {
-                    return true;
-                }
-            }
+            return this._lineFolds[line];
         });
 
         CodeMirror.commands.toggleFold = function (cm) {
@@ -137,21 +141,22 @@ define(function (require, exports, module) {
                 }
             });
         };
-        
+        /**
+            Folds the specified range. The descendants of any fold regions within the range are also folded up to
+            a level set globally in the codeFolding preferences
+        */
         CodeMirror.commands.foldToLevel = function (cm, start, end) {
-            var rf = CodeMirror.fold.auto, range, level = prefs.getSetting("maxFoldLevel");
+            var rf = CodeMirror.fold.auto, level = prefs.getSetting("maxFoldLevel");
             function foldLevel(n, from, to) {
                 if (n > 0) {
-                    var i, e;
-                    for (i = from; i < to; ) {
+                    var i = from, e, range;
+                    while (i < to) {
                         range = rf(cm, CodeMirror.Pos(i, 0));
                         if (range) {
+                            //call fold level for the range just folded
+                            foldLevel(n - 1, range.from.line + 1, range.to.line - 1);
                             cm.foldCode(CodeMirror.Pos(i, 0), null, "fold");
                             i = range.to.line + 1;
-                            //call fold level for the range just folded
-                            cm.operation(function () {
-                                foldLevel(n - 1, range.from.line + 1, range.to.line - 1);
-                            });
                         } else {
                             i++;
                         }
@@ -165,11 +170,13 @@ define(function (require, exports, module) {
             });
         };
         
-        CodeMirror.commands.unfoldAll = function (cm) {
+        CodeMirror.commands.unfoldAll = function (cm, from, to) {
+            from = from || cm.firstLine();
+            to = to || cm.lastLine();
             cm.operation(function () {
                 var i, e;
-                for (i = cm.firstLine(), e = cm.lastLine(); i <= e; i++) {
-                     if (cm.isFolded(i)) { cm.unfoldCode(i); }
+                for (i = from, e = to; i <= e; i++) {
+                    if (cm.isFolded(i)) { cm.unfoldCode(i, {range: cm._lineFolds[i]}); }
                 }
             });
         };

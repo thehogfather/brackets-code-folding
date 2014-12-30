@@ -27,12 +27,11 @@ define(function (require, exports, module) {
     
     function inflate(folds) {
         if (!folds) { return folds; }
-         //transform the folds into objects with from and to properties while gracefully upgrading old preferences
+         //transform the folds into objects with from and to properties
         var ranges = {}, obj;
         Object.keys(folds).forEach(function (line) {
             obj = folds[line];
-            ranges[line] = !Array.isArray(obj) ? obj :
-                    {from: {line: obj[0][0], ch: obj[0][1]}, to: {line: obj[1][0], ch: obj[1][1]}};
+            ranges[line] = {from: {line: obj[0][0], ch: obj[0][1]}, to: {line: obj[1][0], ch: obj[1][1]}};
         });
         
         return ranges;
