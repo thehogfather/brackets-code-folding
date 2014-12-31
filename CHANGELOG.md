@@ -1,4 +1,6 @@
 #Changelog
+##0.2.26
+* Addresses #110: marker for folded region now styled using only css.
 ##0.2.25
 * Added max fold levels to the settings dialog. This improves performance when folding all regions in a document by restricting the level of nesting to a specified number.
 * Updated Russian translation
