@@ -51,14 +51,9 @@ define(function (require, exports, module) {
                 return range;
             }
 
-            function makeWidget(options) {
-                var widget = (options && options.widget) || "\u2194";
-                if (typeof widget === "string") {
-                    var text = document.createTextNode(widget);
-                    widget = document.createElement("span");
-                    widget.appendChild(text);
-                    widget.className = "CodeMirror-foldmarker";
-                }
+            function makeWidget() {
+                var widget = document.createElement("span");
+                widget.className = "CodeMirror-foldmarker";
                 return widget;
             }
 
@@ -74,7 +69,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var myWidget = makeWidget(options);
+            var myWidget = makeWidget();
             var myRange = cm.markText(range.from, range.to, {
                 replacedWith: myWidget,
                 clearOnEnter: true,
