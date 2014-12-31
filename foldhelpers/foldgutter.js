@@ -146,11 +146,16 @@ define(function (require, exports, module) {
             }
         }
     
+        
         function onChange(cm, changeObj) {
             var state = cm.state.foldGutter;
             var lineChanges = changeObj.text.length - changeObj.removed.length;
+            //update the lineFolds cache if lines have been added or removed from the editor
             if (lineChanges !== 0) {
                 updateFoldsCache(cm, changeObj.from.line, lineChanges);
+                if (lineChanges > 0) {
+                    updateFoldInfo(cm, changeObj.from.line + lineChanges, changeObj.from.line + lineChanges + 1);
+                }
             }
             state.from = changeObj.from.line;
             state.to = 0;
@@ -159,7 +164,7 @@ define(function (require, exports, module) {
                 updateInViewport(cm);
             }, prefs.getSetting("foldOnChangeTimeSpan") || 600);
         }
-                
+        
         function onViewportChange(cm) {
             var state = cm.state.foldGutter;
             clearTimeout(state.changeUpdate);
