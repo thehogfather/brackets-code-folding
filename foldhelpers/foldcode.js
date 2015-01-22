@@ -1,6 +1,5 @@
 /**
  * Based on http://codemirror.net/addon/fold/foldcode.js
-   MOdified by:
  * @author Patrick Oladimeji
  * @date 10/28/13 8:41:46 AM
  * @last modified 20 April 2014

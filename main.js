@@ -106,19 +106,33 @@ define(function (require, exports, module) {
 		return folds;
 	}
 	
-	/**Restores the linefolds in the editor using values fetched from the preference store*/
+	/**
+        Restores the linefolds in the editor using values fetched from the preference store
+        Checks the document to ensure that changes have not been made (e.g., in a different editor)
+        to invalidate the saved line folds.
+        @param {Editor} editor  the editor whose saved line folds should be restored
+    */
     function restoreLineFolds(editor) {
 		var saveFolds = _prefs.getSetting("saveFoldStates");
+        var rf = CodeMirror.fold.auto;
         if (editor && saveFolds) {
             var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
             var folds = cm._lineFolds || _prefs.get(path), vp = cm.getViewport();
             if (folds && (keys = Object.keys(folds)).length) {
-                var i, range;
+                var i, range, cachedRange;
                 keys.forEach(function (lineNumber) {
-                    cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
+                    range = rf(cm, CodeMirror.Pos(lineNumber));
+                    cachedRange = folds[lineNumber];
+                    if (JSON.stringify(range) === JSON.stringify(cachedRange)) {
+                        cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
+                    } else {
+                        delete folds[lineNumber];
+                    }
                 });
+                //update the folds
+                _prefs.set(path, folds);
             }
         }
     }

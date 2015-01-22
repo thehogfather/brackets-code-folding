@@ -72,7 +72,8 @@ define(function (require, exports, module) {
             }
             
             while (i < to) {
-                var sr = _isCurrentlyFolded(i), range;
+                var sr = _isCurrentlyFolded(i),//surrounding range for the current line if one exists
+                    range;
                 var mark = marker("CodeMirror-foldgutter-blank");
                 var pos = CodeMirror.Pos(i),
                     func = opts.rangeFinder || CodeMirror.fold.auto;
