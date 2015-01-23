@@ -123,10 +123,11 @@ define(function (require, exports, module) {
             if (folds && (keys = Object.keys(folds)).length) {
                 var i, range, cachedRange;
                 keys.forEach(function (lineNumber) {
+                    lineNumber = +lineNumber;
                     range = rf(cm, CodeMirror.Pos(lineNumber));
                     cachedRange = folds[lineNumber];
                     if (JSON.stringify(range) === JSON.stringify(cachedRange)) {
-                        cm.foldCode(+lineNumber, {range: folds[lineNumber]}, "fold");
+                        cm.foldCode(lineNumber, {range: folds[lineNumber]}, "fold");
                     } else {
                         delete folds[lineNumber];
                     }
