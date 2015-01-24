@@ -117,6 +117,29 @@ define(function (require, exports, module) {
         CodeMirror.defineExtension("isFolded", function (line) {
             return this._lineFolds[line];
         });
+        /**
+          Checks the validity of the ranges passed in the parameter and returns the foldranges
+          that are still valid in the current document
+          @param {object} folds the dictionary of lines in the current document that should be folded
+          @returns {object} valid folds found in those passed in parameter
+        */
+        CodeMirror.defineExtension("getValidFolds", function (folds) {
+            var keys, rf = CodeMirror.fold.auto, cm = this, result = {};
+            if (folds && (keys = Object.keys(folds)).length) {
+                var i, range, cachedRange;
+                keys.forEach(function (lineNumber) {
+                    lineNumber = +lineNumber;
+                    range = rf(cm, CodeMirror.Pos(lineNumber));
+                    cachedRange = folds[lineNumber];
+                    if (range && cachedRange && range.from.line === cachedRange.from.line &&
+                            range.to.line === cachedRange.to.line) {
+                        cm.foldCode(lineNumber, {range: folds[lineNumber]}, "fold");
+                        result[lineNumber] = folds[lineNumber];
+                    }
+                });
+            }
+            return result;
+        });
 
         CodeMirror.commands.toggleFold = function (cm) {
             cm.foldCode(cm.getCursor());

@@ -24,10 +24,6 @@ define(function (require, exports, module) {
             if (!opts.indicatorFolded) { opts.indicatorFolded = "CodeMirror-foldgutter-folded"; }
             return opts;
         }
-        
-        function isFolded(cm, line) {
-            return cm._lineFolds[line];
-        }
     
         function marker(spec) {
             if (typeof spec === "string") {
@@ -83,7 +79,7 @@ define(function (require, exports, module) {
                 } else {
                     range = cm._lineFolds[i] || (func && func(cm, pos));
                     if (!fade || (fade && gutter.is(":hover"))) {
-                        if (isFolded(cm, i)) {
+                        if (cm.isFolded(i)) {
                             //expand fold if invalid
                             if (range) {
                                 mark = marker(opts.indicatorFolded);
@@ -146,24 +142,31 @@ define(function (require, exports, module) {
                 cm._lineFolds = newFolds;
             }
         }
-    
         
         function onChange(cm, changeObj) {
-            var state = cm.state.foldGutter;
-            var lineChanges = changeObj.text.length - changeObj.removed.length;
-            //update the lineFolds cache if lines have been added or removed from the editor
-            if (lineChanges !== 0) {
-                updateFoldsCache(cm, changeObj.from.line, lineChanges);
-                if (lineChanges > 0) {
-                    updateFoldInfo(cm, changeObj.from.line + lineChanges, changeObj.from.line + lineChanges + 1);
+            if (changeObj.origin === "setValue") {//text content has changed outside of brackets
+                var folds = cm.getValidFolds(cm._lineFolds);
+                cm._lineFolds = folds;
+                Object.keys(folds).forEach(function (line) {
+                    cm.foldCode(+line);
+                });
+            } else {
+                var state = cm.state.foldGutter;
+                var lineChanges = changeObj.text.length - changeObj.removed.length;
+                //update the lineFolds cache if lines have been added or removed from the editor
+                if (lineChanges !== 0) {
+                    updateFoldsCache(cm, changeObj.from.line, lineChanges);
+                    if (lineChanges > 0) {
+                        updateFoldInfo(cm, changeObj.from.line + lineChanges, changeObj.from.line + lineChanges + 1);
+                    }
                 }
+                state.from = changeObj.from.line;
+                state.to = 0;
+                clearTimeout(state.changeUpdate);
+                state.changeUpdate = setTimeout(function () {
+                    updateInViewport(cm);
+                }, prefs.getSetting("foldOnChangeTimeSpan") || 600);
             }
-            state.from = changeObj.from.line;
-            state.to = 0;
-            clearTimeout(state.changeUpdate);
-            state.changeUpdate = setTimeout(function () {
-                updateInViewport(cm);
-            }, prefs.getSetting("foldOnChangeTimeSpan") || 600);
         }
         
         function onViewportChange(cm) {
