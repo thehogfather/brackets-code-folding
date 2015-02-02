@@ -1,4 +1,8 @@
 #Changelog
+##0.3.0
+* Addresses #114 gaps no longer appear in fold gutter (especially in custom themes)
+* Addresses #116 external modification to files no longer corrupt the fold states in the document
+
 ##0.2.26
 * Addresses #110: marker for folded region now styled using only css.
 ##0.2.25

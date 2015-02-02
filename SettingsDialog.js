@@ -41,7 +41,7 @@ define(function (require, exports, module) {
                 var maxFoldLevel = $("#max-fold-level", $dialog).val();
 				preferences.setSetting("minFoldSize", isNaN(minFoldSize) || +minFoldSize === 0 ?
 									   +preferences.getSetting("minFoldSize") : +minFoldSize);
-				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));				                
+				preferences.setSetting("saveFoldStates", $("#save-fold-states", $dialog).prop("checked"));
 				preferences.setSetting("maxFoldLevel", isNaN(maxFoldLevel) || +maxFoldLevel === 0 ?
 									   +preferences.getSetting("maxFoldLevel") : +maxFoldLevel);
                 preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));

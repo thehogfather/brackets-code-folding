@@ -62,7 +62,11 @@ define(function (require, exports, module) {
 				res[key] = self.getSetting(key);
 			});
 			return res;
-		}
+		},
+        clearAllFolds: function () {
+            stateManager.set(folds, {});
+            stateManager.save();
+        }
     };
 
 });
