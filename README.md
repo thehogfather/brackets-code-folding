@@ -25,10 +25,19 @@ The following are the default keyboard shortcut keys for the code-folding extens
     Alt-1 Collapse all code regions in current editor
     Shift-Alt-1 Expand all code regions in current editor
 
+
 ##Known Issues
 #### Conflicting keyboard shortcuts
-**If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, please use an extension like [Brackets Key Remapper](https://bitbucket.org/sacah/brackets-key-remapper) to change the shortcut keys to suit your needs.**
+**If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, you can [remap the keys as described here](https://github.com/adobe/brackets/wiki/User-Key-Bindings). **
 
+The following are CommandIds for remmaping keys
+    codefolding.collapse.all                **collapses all regions**
+    codefolding.collapse                    **collapses current region**
+    codefolding.expand                      **expands current region**
+    codefolding.expand.all                  **expands all code regions in file**
+    codefolding.collapse.customregions      **collapses all custom regions in the file **
+    codefolding.settings                    **show code folding settings dialog**
+    
 #### EdgeCode support
 If you are running edge code, the latest compatible version is [v0.2.7](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7). You can download and install from [this url](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7).
 
