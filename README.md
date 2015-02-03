@@ -31,6 +31,7 @@ The following are the default keyboard shortcut keys for the code-folding extens
 **If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, you can [remap the keys as described here](https://github.com/adobe/brackets/wiki/User-Key-Bindings). **
 
 The following are CommandIds for remmaping keys
+
     codefolding.collapse.all                **collapses all regions**
     codefolding.collapse                    **collapses current region**
     codefolding.expand                      **expands current region**
