@@ -2,6 +2,8 @@
 A code folding extension for [Brackets](https://github.com/adobe/brackets/) based on [CodeMirror's folding addon](http://codemirror.net/demo/folding.html).
 Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has some support for html and xml files based on tag matching.
 
+![Alt text](./screenshots/folded-example.png?raw=true "Folded Example")
+
 ### Features
 1. Define custom regions in any language recognised in Brackets by creating a line comment whose first word is **region** to designate the beginning of a region, and another line comment whose first word is **endregion** to designate the end of a region
 
