@@ -129,12 +129,14 @@ define(function (require, exports, module) {
                 var i, range, cachedRange;
                 keys.forEach(function (lineNumber) {
                     lineNumber = +lineNumber;
-                    range = rf(cm, CodeMirror.Pos(lineNumber));
-                    cachedRange = folds[lineNumber];
-                    if (range && cachedRange && range.from.line === cachedRange.from.line &&
-                            range.to.line === cachedRange.to.line) {
-                        cm.foldCode(lineNumber, {range: folds[lineNumber]}, "fold");
-                        result[lineNumber] = folds[lineNumber];
+                    if (lineNumber >= cm.firstLine() && lineNumber <= cm.lastLine()) {
+                        range = rf(cm, CodeMirror.Pos(lineNumber));
+                        cachedRange = folds[lineNumber];
+                        if (range && cachedRange && range.from.line === cachedRange.from.line &&
+                                range.to.line === cachedRange.to.line) {
+                            cm.foldCode(lineNumber, {range: folds[lineNumber]}, "fold");
+                            result[lineNumber] = folds[lineNumber];
+                        }
                     }
                 });
             }

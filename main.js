@@ -132,7 +132,7 @@ define(function (require, exports, module) {
     function saveLineFolds(editor) {
 		var saveFolds = _prefs.getSetting("saveFoldStates");
         if (!editor || !saveFolds) { return; }
-		var folds = editor._codeMirror._lineFolds;
+		var folds = editor._codeMirror._lineFolds || {};
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
 			_prefs.set(path, folds);
