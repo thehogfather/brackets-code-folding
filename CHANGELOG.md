@@ -1,4 +1,6 @@
 #Changelog
+##0.3.1
+* Addresses #119 Possible CodeMirror conflict with brackets-git
 ##0.3.0
 * Addresses #114 gaps no longer appear in fold gutter (especially in custom themes)
 * Addresses #116 external modification to files no longer corrupt the fold states in the document
