@@ -1,4 +1,6 @@
 #Changelog
+##0.3.2
+* Addresses #122 Cant open fold after tab or space on folded line
 ##0.3.1
 * Addresses #119 Possible CodeMirror conflict with brackets-git
 ##0.3.0

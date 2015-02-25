@@ -241,7 +241,7 @@ define(function (require, exports, module) {
             gutters.splice(lnIndex + 1, 0, gutterName);
             cm.setOption("gutters",  gutters);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
-            
+   
             $(cm.getGutterElement()).on({
                 mouseenter: function () {
                     if (_prefs.getSetting("fadeFoldButtons")) {

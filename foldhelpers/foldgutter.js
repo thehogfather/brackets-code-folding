@@ -125,8 +125,18 @@ define(function (require, exports, module) {
         }
         
         function updateFoldsCache(cm, from, linesDiff) {
-            if (cm._lineFolds) {
-                var newFolds = {}, range;
+            var range;
+            if (linesDiff === 0 && cm._lineFolds) {
+                var opts = cm.state.foldGutter.options;
+                var rf = opts.rangeFinder || CodeMirror.fold.auto;
+                range = rf(cm, CodeMirror.Pos(from));
+                if (range) {
+                    cm._lineFolds[from] = range;
+                } else {
+                    delete cm._lineFolds[from];
+                }
+            } else if (cm._lineFolds) {
+                var newFolds = {};
                 Object.keys(cm._lineFolds).forEach(function (line) {
                     line = +line;
                     if (line < from) {
@@ -153,9 +163,9 @@ define(function (require, exports, module) {
             } else {
                 var state = cm.state.foldGutter;
                 var lineChanges = changeObj.text.length - changeObj.removed.length;
-                //update the lineFolds cache if lines have been added or removed from the editor
+                //update the lineFolds cache
+                updateFoldsCache(cm, changeObj.from.line, lineChanges);
                 if (lineChanges !== 0) {
-                    updateFoldsCache(cm, changeObj.from.line, lineChanges);
                     if (lineChanges > 0) {
                         updateFoldInfo(cm, changeObj.from.line + lineChanges, changeObj.from.line + lineChanges + 1);
                     }
