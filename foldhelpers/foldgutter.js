@@ -126,11 +126,14 @@ define(function (require, exports, module) {
         
         function updateFoldsCache(cm, from, linesDiff) {
             var range;
+			var minFoldSize = prefs.getSetting("minFoldSize") || 2;
+
             if (linesDiff === 0 && cm._lineFolds) {
                 var opts = cm.state.foldGutter.options;
                 var rf = opts.rangeFinder || CodeMirror.fold.auto;
                 range = rf(cm, CodeMirror.Pos(from));
-                if (range) {
+                
+                if (range && range.from.line - range.to.line >= minFoldSize) {
                     cm._lineFolds[from] = range;
                 } else {
                     delete cm._lineFolds[from];
