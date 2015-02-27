@@ -39,7 +39,7 @@ require.config({
 define(function (require, exports, module) {
     "use strict";
     var CodeMirror = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror");
-    
+    var Strings = require("strings");
     var CommandManager          = brackets.getModule("command/CommandManager"),
         DocumentManager         = brackets.getModule("document/DocumentManager"),
         EditorManager           = brackets.getModule("editor/EditorManager"),
@@ -52,7 +52,11 @@ define(function (require, exports, module) {
         COLLAPSE_ALL            = "codefolding.collapse.all",
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
-        EXPAND_ALL              = "codefolding.expand.all";
+        EXPAND_ALL              = "codefolding.expand.all",
+		CODE_FOLDING_SETTINGS	= "codefolding.settings",
+        gutterName              = "CodeMirror-foldgutter",
+		COLLAPSE_CUSTOM_REGIONS = "codefolding.collapse.customregions",
+		SettingsDialog			= require("SettingsDialog");
     
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
@@ -65,24 +69,25 @@ define(function (require, exports, module) {
     //need to modify the gutter click handler to take care of some collapse and expand features
     //e.g. collapsing all children when 'alt' key is pressed
     require("foldhelpers/foldcode")();
-    require("foldhelpers/foldgutter")();
+    var foldGutter = require("foldhelpers/foldgutter")();
 
     var indentFold              = require("foldhelpers/indentFold"),
-        latexFold               = require("foldhelpers/latex-fold");
+        latexFold               = require("foldhelpers/latex-fold"),
+        regionFold              = require("foldhelpers/region-fold");
 
     //register a global fold helper based on indentation folds
     CodeMirror.registerGlobalHelper("fold", "indent", function (mode, cm) {
-        return true;
+        return _prefs.getSetting("alwaysUseIndentFold");
     }, indentFold);
     
-    CodeMirror.registerHelper("fold", "stex", latexFold);
+    CodeMirror.registerGlobalHelper("fold", "region", function (mode, cm) {
+        return _prefs.getSetting("enableRegionFolding");
+    }, regionFold);
     
-	//gets the linefolds saved for the current document in the preference store
-    function getLineFolds(path) {
-        if (!_prefs.get(path)) { _prefs.set(path,  []); }
-        return _prefs.get(path);
-    }
-	
+    CodeMirror.registerHelper("fold", "stex", latexFold);
+	CodeMirror.registerHelper("fold", "django", CodeMirror.helpers.fold.brace);
+	CodeMirror.registerHelper("fold", "tornado", CodeMirror.helpers.fold.brace);
+    
     /** gets the folded regions in the editor.
 	 * @returns a map containing {linenumber: {from, to}}
 	 */
@@ -101,30 +106,33 @@ define(function (require, exports, module) {
 		return folds;
 	}
 	
-	/**Restores the linefolds in the editor using values fetched from the preference store*/
+	/**
+        Restores the linefolds in the editor using values fetched from the preference store
+        Checks the document to ensure that changes have not been made (e.g., in a different editor)
+        to invalidate the saved line folds.
+        @param {Editor} editor  the editor whose saved line folds should be restored
+    */
     function restoreLineFolds(editor) {
-        if (editor) {
+		var saveFolds = _prefs.getSetting("saveFoldStates");
+        var rf = CodeMirror.fold.auto;
+        if (editor && saveFolds) {
             var cm = editor._codeMirror, foldFunc;
             if (!cm) {return; }
             var path = editor.document.file.fullPath, keys;
-            var folds = getLineFolds(path), vp = cm.getViewport();
-            if (folds && folds.hasOwnProperty("length")) {//Old extension preference store
-                folds.forEach(function (line) {
-                    cm.foldCode(line);
-                });
-            } else if (folds && (keys = Object.keys(folds)).length) {
-                var i, range;
-                keys.forEach(function (lineNumber) {
-                    cm.foldCode(+lineNumber, null, "fold");
-                });
-            }
+            var folds = cm._lineFolds || _prefs.get(path), vp = cm.getViewport();
+            cm._lineFolds = cm.getValidFolds(folds);
+            _prefs.set(path, cm._lineFolds);
+            Object.keys(cm._lineFolds).forEach(function (line) {
+                cm.foldCode(+line);
+            });
         }
     }
 	
     /**Saves the line folds in the editor using the preference storage**/
     function saveLineFolds(editor) {
-        if (!editor) { return; }
-		var folds = getLineFoldsInEditor(editor);
+		var saveFolds = _prefs.getSetting("saveFoldStates");
+        if (!editor || !saveFolds) { return; }
+		var folds = editor._codeMirror._lineFolds || {};
 		var path = editor.document.file.fullPath;
 		if (Object.keys(folds).length) {
 			_prefs.set(path, folds);
@@ -137,32 +145,48 @@ define(function (require, exports, module) {
         var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
         if (gutter !== opts.gutter) { return; }
         var editor = EditorManager.getActiveEditor(), range, i;
-        var _lineFolds = _prefs.get(editor.document.file.fullPath);
+        var _lineFolds = cm._lineFolds;
         if (cm.isFolded(line)) {
             if (event.altKey) {//unfold code including children
                 range = _lineFolds[line];
-                for (i = range.to.line; i >=  range.from.line; i--) {
-                    if (cm.isFolded(i)) { cm.unfoldCode(i + 1); }
-                }
+                CodeMirror.commands.unfoldAll(cm, range.from.line, range.to.line);
             } else {
-                cm.unfoldCode(line + 1);
+                cm.unfoldCode(line, {range: _lineFolds[line]});
             }
         } else {
             if (event.altKey) {
                 var rf = CodeMirror.fold.auto;
                 range = rf(cm, pos);
                 if (range) {
-                    for (i = range.to.line; i >=  range.from.line; i--) {
-                        if (!cm.isFolded(i)) { cm.foldCode(i); }
-                    }
+                    CodeMirror.commands.foldToLevel(cm, range.from.line, range.to.line);
                 }
             } else {
                 cm.foldCode(line);
             }
         }
     }
+	
+	/**
+		Collapses all custom regions defined in the current editor
+	*/
+	function collapseCustomRegions() {
+		var editor = EditorManager.getFocusedEditor();
+		if (editor) {
+			var cm = editor._codeMirror, i = cm.firstLine();
+			while (i < cm.lastLine()) {
+				var range = cm.foldCode(i, {rangeFinder: regionFold});
+				if (range) {
+					i = range.to.line;
+				} else {
+					i++;
+				}
+			}
+		}
+	}
+	
     /**
-		Collapses the code region nearest the current cursor position. Nearest is found by searching from the current line and moving up the document until an
+		Collapses the code region nearest the current cursor position.
+		Nearest is found by searching from the current line and moving up the document until an
 		opening code-folding region is found.
 	 */
     function collapseCurrent() {
@@ -186,7 +210,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor) {
             var cursor = editor.getCursorPos(), cm = editor._codeMirror;
-            cm.unfoldCode(cursor.line + 1);
+            cm.unfoldCode(cursor.line);
         }
     }
     
@@ -194,7 +218,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
             var i, cm = editor._codeMirror, range;
-            CodeMirror.commands.foldAll(cm);
+            CodeMirror.commands.foldToLevel(cm);
         }
     }
 
@@ -211,21 +235,30 @@ define(function (require, exports, module) {
 		if (cm) {
 			var path = editor.document.file.fullPath, _lineFolds = _prefs.get(path);
             _lineFolds = _lineFolds || {};
-            cm.setOption("gutters", ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]);
+            cm._lineFolds = _lineFolds;
+            var gutters = cm.getOption("gutters").slice(0);
+            var lnIndex = gutters.indexOf("CodeMirror-linenumbers");
+            gutters.splice(lnIndex + 1, 0, gutterName);
+            cm.setOption("gutters",  gutters);
             cm.setOption("foldGutter", {onGutterClick: onGutterClick});
-            cm.on("fold", function (cm, from, to) {
-                _lineFolds[from.line] = {from: from, to: to};
-                _prefs.set(path, _lineFolds);
-            });
-            cm.on("unfold", function (cm, from, to) {
-                delete _lineFolds[from.line];
-                _prefs.set(path, _lineFolds);
+   
+            $(cm.getGutterElement()).on({
+                mouseenter: function () {
+                    if (_prefs.getSetting("fadeFoldButtons")) {
+                        foldGutter.updateInViewport(cm);
+                    }
+                },
+                mouseleave: function () {
+                    if (_prefs.getSetting("fadeFoldButtons")) {
+                        foldGutter.clearGutter(cm);
+                    }
+                }
             });
 		}
 	}
 	
     function onActiveEditorChanged(event, current, previous) {
-		if (current && current._codeMirror.getOption("gutters").indexOf("CodeMirror-foldgutter") === -1) {
+		if (current && current._codeMirror.getOption("gutters").indexOf(gutterName) === -1) {
 			registerHandlers(current);
 			restoreLineFolds(current);
 		}
@@ -236,6 +269,20 @@ define(function (require, exports, module) {
 		saveLineFolds(EditorManager.getCurrentFullEditor());
 	}
 	
+	function showSettingsDialog() {
+		SettingsDialog.show(function () {
+            var editor = EditorManager.getCurrentFullEditor();
+            if (editor) {
+                var cm = editor._codeMirror;
+                if (_prefs.getSetting("fadeFoldButtons")) {
+                    foldGutter.clearGutter(cm);
+                } else {
+                    foldGutter.updateInViewport(cm);
+                }
+            }
+        });
+	}
+	
     $(EditorManager).on("activeEditorChange", onActiveEditorChanged);
     $(DocumentManager).on("documentRefreshed", function (event, doc) {
         //restore the folds for this document
@@ -244,19 +291,22 @@ define(function (require, exports, module) {
     
     $(ProjectManager).on("beforeProjectClose beforeAppClose", saveBeforeClose);
     
-    var Strings = require("strings");
-    
-    CommandManager.register(Strings.CollapseAll, COLLAPSE_ALL, collapseAll);
-    CommandManager.register(Strings.ExpandAll, EXPAND_ALL, expandAll);
+    CommandManager.register(Strings.CODE_FOLDING_SETTINGS + "...", CODE_FOLDING_SETTINGS, showSettingsDialog);
+    CommandManager.register(Strings.COLLAPSE_ALL, COLLAPSE_ALL, collapseAll);
+    CommandManager.register(Strings.EXPAND_ALL, EXPAND_ALL, expandAll);
+	
+	CommandManager.register(Strings.COLLAPSE_CUSTOM_REGIONS, COLLAPSE_CUSTOM_REGIONS, collapseCustomRegions);
 
-    CommandManager.register(Strings.CollapseCurrent, COLLAPSE, collapseCurrent);
-    CommandManager.register(Strings.ExpandCurrent, EXPAND, expandCurrent);
+    CommandManager.register(Strings.COLLAPSE_CURRENT, COLLAPSE, collapseCurrent);
+    CommandManager.register(Strings.EXPAND_CURRENT, EXPAND, expandCurrent);
     
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
+	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLDING_SETTINGS);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_ALL);
 	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
+	Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_CUSTOM_REGIONS);
 
     KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-C");
     KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-X");

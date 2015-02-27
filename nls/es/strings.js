@@ -21,14 +21,14 @@
  *
  */
 
-// German Translation
+// Spanish Translation
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define */
 
 define({
-    "CollapseAll"       : "Alle Abschnitte Zuklappen",
-    "ExpandAll"         : "Alle Abschnitte Aufklappen",
-    "CollapseCurrent"   : "Abschnitt Zuklappen",
-    "ExpandCurrent"     : "Abschnitt Aufklappen",
+    "CollapseAll"       : "Contraer Todo",
+    "ExpandAll"         : "Expandir Todo",
+    "CollapseCurrent"   : "Contraer Sección",
+    "ExpandCurrent"     : "Expandir Sección",
 });
