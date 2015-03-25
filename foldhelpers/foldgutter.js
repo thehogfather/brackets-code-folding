@@ -67,6 +67,19 @@ define(function (require, exports, module) {
                 }
             }
             
+            /**
+                This case is needed when unfolding a region that does not cause the viewport to change.
+                For instance in a file with about 15 lines, if some code regions are folded and unfolded, the
+                viewport change event isnt fired by codeMirror. The setTimeout is a workaround to trigger the
+                gutter update after the viewport has been drawn.
+            */
+            if (i === to) {
+                setTimeout(function () {
+                    var vp = cm.getViewport();
+                    updateFoldInfo(cm, vp.from, vp.to);
+                }, 200);
+            }
+            
             while (i < to) {
                 var sr = _isCurrentlyFolded(i),//surrounding range for the current line if one exists
                     range;

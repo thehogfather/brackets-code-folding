@@ -204,7 +204,7 @@ define(function (require, exports, module) {
         }
     }
 	/**
-		expands the code region at the current cursor position.
+		Expands the code region at the current cursor position.
 	*/
     function expandCurrent() {
         var editor = EditorManager.getFocusedEditor();
@@ -213,7 +213,19 @@ define(function (require, exports, module) {
             cm.unfoldCode(cursor.line);
         }
     }
-    
+    /**
+        Collapses all foldable regions in the current document. Folding is done up to a level 'n' 
+        which is defined in the preferences. Levels refer to fold heirarchies e.g., for the following 
+        code fragment, the function is level 1, the if statement is level 2 and the forEach is level 3
+        
+            function sample() {
+                if (debug) {
+                    logMessages.forEach(function (m) {
+                        console.debug(m);
+                    });
+                }
+            }
+    */
     function collapseAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {
@@ -221,7 +233,9 @@ define(function (require, exports, module) {
             CodeMirror.commands.foldToLevel(cm);
         }
     }
-
+    /**
+        Expands all folded regions in the current document
+    */
     function expandAll() {
         var editor = EditorManager.getFocusedEditor();
         if (editor && editor._codeMirror) {

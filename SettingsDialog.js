@@ -12,7 +12,6 @@ define(function (require, exports, module) {
 		Strings = require("i18n!nls/strings"),
 		CommandManager = brackets.getModule("command/CommandManager"),
 		settingsTemplate = require("text!htmlTemplates/settings-dialog.html"),
-		reloadTemplate = require("text!htmlTemplates/reload-dialog.html"),
 		preferences = require("Prefs");
 	
 	function setFormValues(prefs) {
