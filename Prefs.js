@@ -15,23 +15,24 @@ define(function (require, exports, module) {
         DefaultSettings         = require("DefaultSettings"),
         foldsKey                = "folds";
 
-    //default preference values
-    prefs.definePreference("enabled", "boolean", true,
-                           {name: strings.ENABLE_CODE_FOLDING, description: strings.ENABLE_CODE_FOLDING});
-    prefs.definePreference("minFoldSize", "number", 2,
-                           {name: strings.MIN_FOLD_SIZE, description: strings.MIN_FOLD_SIZE_HELP});
-    prefs.definePreference("saveFoldStates", "boolean", true,
-                           {name: strings.SAVE_FOLD_STATES, description: strings.SAVE_FOLD_STATES_HELP});
-    prefs.definePreference("alwaysUseIndentFold", "boolean", true,
-                           {name: strings.ALWAYS_USE_INDENT_FOLD, description: strings.ALWAYS_USE_INDENT_FOLD_HELP});
-    prefs.definePreference("enableRegionFolding", "boolean", true,
-                           {name: strings.ENABLE_REGION_FOLDING, description: strings.ENABLE_REGION_FOLDING});
-    prefs.definePreference("fadeFoldButtons", "boolean", false,
-                           {name: strings.FADE_FOLD_BUTTONS, description: strings.FADE_FOLD_BUTTONS_HELP});
-    prefs.definePreference("maxFoldLevel", "number", 2,
-                           {name: strings.MAX_FOLD_LEVEL, description: strings.MAX_FOLD_LEVEL_HELP});
-    prefs.definePreference("folds", "object", {});
-
+    //define default preference values if they have not yet been defined
+    if (prefs.get("enabled") === undefined) {
+        prefs.definePreference("enabled", "boolean", true,
+                               {name: strings.ENABLE_CODE_FOLDING, description: strings.ENABLE_CODE_FOLDING});
+        prefs.definePreference("minFoldSize", "number", 2,
+                               {name: strings.MIN_FOLD_SIZE, description: strings.MIN_FOLD_SIZE_HELP});
+        prefs.definePreference("saveFoldStates", "boolean", true,
+                               {name: strings.SAVE_FOLD_STATES, description: strings.SAVE_FOLD_STATES_HELP});
+        prefs.definePreference("alwaysUseIndentFold", "boolean", true,
+                               {name: strings.ALWAYS_USE_INDENT_FOLD, description: strings.ALWAYS_USE_INDENT_FOLD_HELP});
+        prefs.definePreference("enableRegionFolding", "boolean", true,
+                               {name: strings.ENABLE_REGION_FOLDING, description: strings.ENABLE_REGION_FOLDING});
+        prefs.definePreference("fadeFoldButtons", "boolean", false,
+                               {name: strings.FADE_FOLD_BUTTONS, description: strings.FADE_FOLD_BUTTONS_HELP});
+        prefs.definePreference("maxFoldLevel", "number", 2,
+                               {name: strings.MAX_FOLD_LEVEL, description: strings.MAX_FOLD_LEVEL_HELP});
+        prefs.definePreference("folds", "object", {});
+    }
     /**
         Simplifies the fold ranges into an array of pairs of numbers.
         @param {!{number: {from: {ch, line}, to: {ch, line}} folds the raw fold ranges indexed by line numbers
