@@ -1,3 +1,5 @@
+*** From release 1.4, code-folding is integrated into Brackets. This repository is still active for users who are running Brackets versions less than 1.4. If you are running 1.4 and require custom region code folding you can find it [here](https://github.com/thehogfather/brackets-custom-region-code-folding).
+
 #Code folding for Brackets
 A code folding extension for [Brackets](https://github.com/adobe/brackets/) based on [CodeMirror's folding addon](http://codemirror.net/demo/folding.html).
 Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has some support for html and xml files based on tag matching.
@@ -40,7 +42,7 @@ The following are CommandIds for remmaping keys
     codefolding.expand.all                  **expands all code regions in file**
     codefolding.collapse.customregions      **collapses all custom regions in the file **
     codefolding.settings                    **show code folding settings dialog**
-    
+
 #### EdgeCode support
 If you are running edge code, the latest compatible version is [v0.2.7](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7). You can download and install from [this url](https://github.com/thehogfather/brackets-code-folding/tree/v0.2.7).
 

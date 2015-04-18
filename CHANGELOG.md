@@ -1,4 +1,6 @@
 #Changelog
+##0.3.3
+* Updated for upcoming integration of code-folding in brackets master. Extension should not be compatible with brackets >= 1.4
 ##0.3.2
 * Addresses #122 Cant open fold after tab or space on folded line
 ##0.3.1
@@ -16,12 +18,12 @@
 * Added portuguese (Brasil) translation [rafaelcastrocouto](https://github.com/rafaelcastrocouto)
 * Added Dutch translation [BBosman](https://github.com/BBosman)
 ##0.2.24
-* Addresses issue #103 - code folding plugin no longer overwrites other gutter elements 
+* Addresses issue #103 - code folding plugin no longer overwrites other gutter elements
 * Added Finish translation [valtlait](https://github.com/valtlait)
 ##0.2.23
 * Added options to fade fold buttons [vadim-kudr](https://github.com/vadim-kudr)
 ##0.2.22
-* Patch for issue #88 - any space character now allowed before a region fold 
+* Patch for issue #88 - any space character now allowed before a region fold
 * Added Japanese translation [lclzd](https://github.com/lclzd)
 ##0.2.21
 * Added menu item for collapsing all custom regions in a document (feature #85)

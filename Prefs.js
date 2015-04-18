@@ -9,14 +9,14 @@
 define(function (require, exports, module) {
     "use strict";
     var PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
-        prefs                   = PreferencesManager.getExtensionPrefs("code-folding"),
+        ProjectManager          = brackets.getModule("project/ProjectManager"),
+        prefs                   = PreferencesManager.getExtensionPrefs("brackets-code-folding"),
         strings                 = require("strings"),
         store                   = {},
         DefaultSettings         = require("DefaultSettings"),
-        foldsKey                = "folds";
+        foldsKey                = "bracket-code-folding.folds";
 
-    //define default preference values if they have not yet been defined
-    if (prefs.get("enabled") === undefined) {
+        //define default preference values if they have not yet been defined
         prefs.definePreference("enabled", "boolean", true,
                                {name: strings.ENABLE_CODE_FOLDING, description: strings.ENABLE_CODE_FOLDING});
         prefs.definePreference("minFoldSize", "number", 2,
@@ -31,8 +31,8 @@ define(function (require, exports, module) {
                                {name: strings.FADE_FOLD_BUTTONS, description: strings.FADE_FOLD_BUTTONS_HELP});
         prefs.definePreference("maxFoldLevel", "number", 2,
                                {name: strings.MAX_FOLD_LEVEL, description: strings.MAX_FOLD_LEVEL_HELP});
-        prefs.definePreference("folds", "object", {});
-    }
+        PreferencesManager.stateManager.definePreference(foldsKey, "object", {});
+
     /**
         Simplifies the fold ranges into an array of pairs of numbers.
         @param {!{number: {from: {ch, line}, to: {ch, line}} folds the raw fold ranges indexed by line numbers
@@ -72,32 +72,47 @@ define(function (require, exports, module) {
     }
 
     /**
-        Gets the line folds saved for the specified path.
-        @param {string} path the document path
-        @returns {number: {from: {line, ch}, to: {line, ch}}} the line folds for the document at the specified path
-    */
-    function get(path) {
-        store = (prefs.get(foldsKey) || {});
-        return inflate(store[path]);
+     * Returns a 'context' object for getting/setting project-specific view state preferences.
+     * Similar to code in MultiRangeInlineEditor._getPrefsContext()...
+     */
+    function getViewStateContext() {
+        var projectRoot = ProjectManager.getProjectRoot();  // note: null during unit tests!
+        return { location : { scope: "user",
+                              layer: "project",
+                              layerID: projectRoot && projectRoot.fullPath } };
     }
 
     /**
-        Saves the line folds specified
-    */
-    function set(path, folds) {
-        store[path] = simplify(folds);
-        prefs.set(foldsKey, store);
+      * Gets the line folds saved for the specified path.
+      * @param {string} path the document path
+      * @return {Object} the line folds for the document at the specified path
+      */
+    function getFolds(path) {
+        var context = getViewStateContext();
+        var folds = PreferencesManager.getViewState(foldsKey, context);
+        return inflate(folds[path]);
     }
 
     /**
-        Get the code folding setting with the specified key from the store
-        @param {!string} key The key for the setting to retrieve
-        @returns {string} the setting with the specified key
-    */
+      * Saves the line folds for the specified path
+      * @param {!string} path the path to the document
+      * @param {Object} folds the fold ranges to save for the current document
+      */
+    function setFolds(path, folds) {
+        var context = getViewStateContext();
+        var allFolds = PreferencesManager.getViewState(foldsKey, context);
+        allFolds[path] = simplify(folds);
+        PreferencesManager.setViewState(foldsKey, allFolds, context);
+    }
+
+    /**
+      * Get the code folding setting with the specified key from the store
+      * @param {!string} key The key for the setting to retrieve
+      * @return {string} the setting with the specified key
+      */
     function getSetting(key) {
         return prefs.get(key);
     }
-
     /**
         Set the code folding setting attributed to the given key using the value supplied
         @param {!string} key the key for the setting to set
@@ -123,12 +138,12 @@ define(function (require, exports, module) {
         Clears all the saved line folds for all documents.
     */
     function clearAllFolds() {
-        prefs.set(foldsKey, {});
+        PreferencesManager.setViewState(foldsKey, {});
     }
 
-    module.exports.get = get;
+    module.exports.getFolds = getFolds;
 
-    module.exports.set = set;
+    module.exports.setFolds = setFolds;
 
     module.exports.getSetting = getSetting;
 
