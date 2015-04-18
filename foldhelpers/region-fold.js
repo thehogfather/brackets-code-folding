@@ -1,4 +1,5 @@
 // Function based on brace-fold.js addon in CodeMirror Library with minor altering.
+// Modified for brackets by Patrick Oladimeji.
 // CodeMirror 4.1.1, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, eqeq:true */
