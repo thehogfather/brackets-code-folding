@@ -1,6 +1,6 @@
 #Changelog
-##0.3.3
-* Updated for upcoming integration of code-folding in brackets master. Extension should not be compatible with brackets >= 1.4
+##0.3.4
+* Updated for upcoming integration of code-folding in brackets master. Extension is no longer compatible with brackets >= 1.4.
 ##0.3.2
 * Addresses #122 Cant open fold after tab or space on folded line
 ##0.3.1
