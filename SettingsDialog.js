@@ -23,7 +23,7 @@ define(function (require, exports, module) {
         $("#save-fold-states").prop("checked", prefs.saveFoldStates);
         $("#always-use-indent-fold").prop("checked", prefs.alwaysUseIndentFold);
         $("#enable-region-folding").prop("checked", prefs.enableRegionFolding);
-        $("#fade-fold-buttons").prop("checked", prefs.fadeFoldButtons);
+        $("#hide-until-mouseover").prop("checked", prefs.hideUntilMouseover);
     }
 
     function restoreDefaults() {
@@ -48,7 +48,7 @@ define(function (require, exports, module) {
         $("#enable-code-folding", $dialog).change(function () {
             var enabled = $("#enable-code-folding").prop("checked");
             var settingsElements = $("#min-fold-size, #max-fold-level, #save-fold-states," +
-                                     "#always-use-indent-fold, #enable-region-folding, #fade-fold-buttons");
+                                     "#always-use-indent-fold, #enable-region-folding, #hide-until-mouseover");
             if (enabled) {
                 settingsElements.removeAttr("disabled");
                 settingsElements.removeClass("disabled");
@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                                        +preferences.getSetting("maxFoldLevel") : +maxFoldLevel);
                 preferences.setSetting("alwaysUseIndentFold", $("#always-use-indent-fold", $dialog).prop("checked"));
                 preferences.setSetting("enableRegionFolding", $("#enable-region-folding", $dialog).prop("checked"));
-                preferences.setSetting("fadeFoldButtons", $("#fade-fold-buttons", $dialog).prop("checked"));
+                preferences.setSetting("hideUntilMouseover", $("#hide-until-mouseover", $dialog).prop("checked"));
 
                 //show reload prompt
                 template = Mustache.render(reloadTemplate, Strings);

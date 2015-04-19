@@ -27,7 +27,7 @@ define(function (require, exports, module) {
                                {name: strings.ALWAYS_USE_INDENT_FOLD, description: strings.ALWAYS_USE_INDENT_FOLD_HELP});
         prefs.definePreference("enableRegionFolding", "boolean", true,
                                {name: strings.ENABLE_REGION_FOLDING, description: strings.ENABLE_REGION_FOLDING});
-        prefs.definePreference("fadeFoldButtons", "boolean", false,
+        prefs.definePreference("hideUntilMouseover", "boolean", false,
                                {name: strings.FADE_FOLD_BUTTONS, description: strings.FADE_FOLD_BUTTONS_HELP});
         prefs.definePreference("maxFoldLevel", "number", 2,
                                {name: strings.MAX_FOLD_LEVEL, description: strings.MAX_FOLD_LEVEL_HELP});

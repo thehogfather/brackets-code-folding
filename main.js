@@ -329,7 +329,7 @@ define(function (require, exports, module) {
             var editor = EditorManager.getCurrentFullEditor();
             if (editor) {
                 var cm = editor._codeMirror;
-                if (prefs.getSetting("fadeFoldButtons")) {
+                if (prefs.getSetting("hideUntilMouseover")) {
                     foldGutter.clearGutter(cm);
                 } else {
                     foldGutter.updateInViewport(cm);
@@ -352,9 +352,6 @@ define(function (require, exports, module) {
         CodeMirror.registerGlobalHelper("fold", "region", function (mode, cm) {
             return prefs.getSetting("enableRegionFolding");
         }, regionFold);
-
-        ///put region fold on top of the globals list so that it has priority over comments folds
-        CodeMirror.fold._global.shift(CodeMirror.fold._global.pop());
 
         CodeMirror.registerHelper("fold", "django", CodeMirror.helpers.fold.brace);
         CodeMirror.registerHelper("fold", "tornado", CodeMirror.helpers.fold.brace);
@@ -381,10 +378,16 @@ define(function (require, exports, module) {
         KeyBindingManager.addBinding(COLLAPSE_ALL, "Alt-1");
         KeyBindingManager.addBinding(EXPAND_ALL, "Shift-Alt-1");
 
+        ///put region fold on top of the globals list so that it has priority over comments folds
+        var finder = CodeMirror.fold._global.pop();
+        if (finder) {
+            CodeMirror.fold._global.unshift(finder);
+        }
+
         var editor = EditorManager.getCurrentFullEditor();
         if (editor) {
             var cm = editor._codeMirror;
-            if (prefs.getSetting("fadeFoldButtons")) {
+            if (prefs.getSetting("hideUntilMouseover")) {
                 foldGutter.clearGutter(cm);
             } else {
                 foldGutter.updateInViewport(cm);

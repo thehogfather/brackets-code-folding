@@ -14,7 +14,7 @@ define(function (require, exports, module) {
         saveFoldStates: true,
         alwaysUseIndentFold: true,
         enableRegionFolding: true,
-        fadeFoldButtons: false,
+        hideUntilMouseover: false,
         maxFoldLevel: 2 // this value is only used when fold all is called
     };
 });

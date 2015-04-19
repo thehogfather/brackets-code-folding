@@ -2,16 +2,16 @@
 @color: #aaa;
 
 .CodeMirror-foldgutter {
-	&-open:after {
-    	content: "\25bc";
-		font-size: @font-size;
-		color: @color;
-	}
-	&-folded:after {
-    	content: "\25b6";
-		font-size: @font-size;
-		color: @color;
-	}
+    &-open:after {
+        content: "\25bc";
+        font-size: @font-size;
+        color: @color;
+    }
+    &-folded:after {
+        content: "\25b6";
+        font-size: @font-size;
+        color: @color;
+    }
 }
 
 .CodeMirror-foldgutter,
@@ -34,21 +34,28 @@
     margin-left: 3px;
     border-radius: 3px;
     cursor: pointer;
-	border: 1px solid lighten(@color, 10%);
-	color: darken(@color, 20%);
-	background-color: lighten(@color, 20%);
-    
+    border: 1px solid lighten(@color, 10%);
+    color: darken(@color, 20%);
+    background-color: lighten(@color, 20%);
+
     &:after {
-        content: "\2194";   
+        content: "\2194";
     }
 }
 
 #code-folding-settings-dialog {
-	label {
-		width: 40%;
-		padding-right: 10px;
-	}
-	input[type=number] {
-		width: 40px;	
-	}
+    label {
+        width: 40%;
+        padding-right: 10px;
+    }
+    input[type=number] {
+        width: 40px;
+    }
+}
+
+
+.CodeMirror.folding-enabled .CodeMirror-linenumber {
+    // Normally linenumber gutter has large right-padding to separate it from the code's text. But the
+    // folding gutter provides that same separation, so we need much less padding when it's displayed.
+    padding-right: 5px;
 }
