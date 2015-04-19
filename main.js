@@ -356,14 +356,14 @@ define(function (require, exports, module) {
         CodeMirror.registerHelper("fold", "django", CodeMirror.helpers.fold.brace);
         CodeMirror.registerHelper("fold", "tornado", CodeMirror.helpers.fold.brace);
 
-        EditorManager.on("activeEditorChange.BracketsCodeFolding", onActiveEditorChanged);
-        DocumentManager.on("documentRefreshed.BracketsCodeFolding", function (event, doc) {
+        $(EditorManager).on("activeEditorChange.BracketsCodeFolding", onActiveEditorChanged);
+        $(DocumentManager).on("documentRefreshed.BracketsCodeFolding", function (event, doc) {
             if (prefs.getSetting("enabled")) {
                 restoreLineFolds(doc._masterEditor);
             }
         });
 
-        ProjectManager.on("beforeProjectClose.BracketsCodeFolding beforeAppClose.BracketsCodeFolding", saveBeforeClose);
+        $(ProjectManager).on("beforeProjectClose.BracketsCodeFolding beforeAppClose.BracketsCodeFolding", saveBeforeClose);
 
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLDING_SETTINGS);
