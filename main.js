@@ -57,13 +57,11 @@ define(function (require, exports, module) {
         COLLAPSE_CUSTOM_REGIONS = "codefolding.collapse.customregions",
         CODE_FOLDING_SETTINGS	= "codefolding.settings",
         SettingsDialog          = require("SettingsDialog"),
-        codeFoldingMenuDivider  = "codefolding.divider",
         collapseKey             = "Ctrl-Alt-[",
         expandKey               = "Ctrl-Alt-]",
         collapseAllKey          = "Alt-1",
         expandAllKey            = "Shift-Alt-1";
 
-    ExtensionUtils.loadStyleSheet(module, "main.less");
 
     //load code mirror addons
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
@@ -77,11 +75,7 @@ define(function (require, exports, module) {
         foldCode                = require("foldhelpers/foldcode");
 
     var indentFold              = require("foldhelpers/indentFold"),
-        latexFold               = require("foldhelpers/latex-fold"),
         regionFold              = require("foldhelpers/region-fold");
-
-    /** Set to true when init() has run; set back to false after deinit() has run */
-    var _isInitialized = false;
 
     /**
         Restores the linefolds in the editor using values fetched from the preference store
@@ -276,21 +270,6 @@ define(function (require, exports, module) {
         });
     }
 
-    /**
-     * Remove the fold gutter for a given CodeMirror instance.
-     * @param {CodeMirror} cm the CodeMirror instance whose gutter should be removed
-     */
-    function removeGutter(editor) {
-        var cm = editor._codeMirror;
-        var gutters = cm.getOption("gutters").slice(0);
-        var index = gutters.indexOf(GUTTER_NAME);
-        $(editor.getRootElement()).removeClass("folding-enabled");
-        gutters.splice(index, 1);
-        cm.setOption("gutters",  gutters);
-        cm.refresh();  // force recomputing gutter width - .folding-enabled class affected linenumbers gutter
-        CodeMirror.defineOption("foldGutter", false, null);
-    }
-
     /** Add gutter and restore saved expand/collapse state */
     function enableFoldingInEditor(editor) {
         if (editor._codeMirror.getOption("gutters").indexOf(GUTTER_NAME) === -1) {
@@ -342,6 +321,7 @@ define(function (require, exports, module) {
         Initialise the extension
     */
     function init() {
+        ExtensionUtils.loadStyleSheet(module, "main.less");
         foldCode.init();
         foldGutter.init();
         //register a global fold helper based on indentation folds
@@ -373,10 +353,10 @@ define(function (require, exports, module) {
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(EXPAND_ALL);
         Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(COLLAPSE_CUSTOM_REGIONS);
 
-        KeyBindingManager.addBinding(COLLAPSE, "Ctrl-Alt-[");
-        KeyBindingManager.addBinding(EXPAND, "Ctrl-Alt-]");
-        KeyBindingManager.addBinding(COLLAPSE_ALL, "Alt-1");
-        KeyBindingManager.addBinding(EXPAND_ALL, "Shift-Alt-1");
+        KeyBindingManager.addBinding(COLLAPSE, collapseKey);
+        KeyBindingManager.addBinding(EXPAND, expandKey);
+        KeyBindingManager.addBinding(COLLAPSE_ALL, collapseAllKey);
+        KeyBindingManager.addBinding(EXPAND_ALL, expandAllKey);
 
         ///put region fold on top of the globals list so that it has priority over comments folds
         var finder = CodeMirror.fold._global.pop();
