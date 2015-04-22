@@ -1,4 +1,7 @@
 #Changelog
+##0.3.5
+* Addresses #134 where the beginning of lines in files are occluded by the fold-gutter.
+* Addresses #133 where disabling code-folding for the settings dialog makes the settings inaccessible on reload
 ##0.3.4
 * Updated for upcoming integration of code-folding in brackets master. Extension is no longer compatible with brackets >= 1.4.
 ##0.3.2

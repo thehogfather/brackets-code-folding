@@ -366,6 +366,7 @@ define(function (require, exports, module) {
 
         var editor = EditorManager.getCurrentFullEditor();
         if (editor) {
+            enableFoldingInEditor(editor);
             var cm = editor._codeMirror;
             if (prefs.getSetting("hideUntilMouseover")) {
                 foldGutter.clearGutter(cm);
@@ -375,7 +376,7 @@ define(function (require, exports, module) {
         }
     }
 
-    AppInit.appReady(function () {
+    AppInit.htmlReady(function () {
         CommandManager.register(Strings.CODE_FOLDING_SETTINGS + "...", CODE_FOLDING_SETTINGS, showSettingsDialog);
         CommandManager.register(Strings.COLLAPSE_ALL, COLLAPSE_ALL, collapseAll);
         CommandManager.register(Strings.EXPAND_ALL, EXPAND_ALL, expandAll);
@@ -384,6 +385,9 @@ define(function (require, exports, module) {
         CommandManager.register(Strings.EXPAND_CURRENT, EXPAND, expandCurrent);
         if (prefs.getSetting("enabled") && !CodeMirror.fold.combine) {
             init();
+        } else if (!prefs.getSetting("enabled")) {
+            Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuDivider();
+            Menus.getMenu(Menus.AppMenuBar.VIEW_MENU).addMenuItem(CODE_FOLDING_SETTINGS);
         }
     });
 });
