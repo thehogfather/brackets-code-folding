@@ -7,7 +7,7 @@
     "homepage": "https://github.com/thehogfather/brackets-code-folding",
     "keywords": ["code folding", "code collapsing"],
     "categories": ["formatting", "general", "editing", "visual"],
-    "i18n": ["en", "de", "it", "es", "gl", "fr", "ru", "jp", "fi", "nl", "pt-br", "tr"],
+    "i18n": ["en", "de", "it", "es", "gl", "fr", "ru", "ja", "fi", "nl", "pt-br", "tr"],
     "engines": {
         "brackets": "<1.3.0"
     },
