@@ -1,7 +1,7 @@
-###Please read
+### Please read
 **From release 1.3, code folding will be integrated into Brackets (although without custom region folding). This repository is still active for users who are running Brackets versions less than 1.3. If you are running 1.3 and would like custom region code folding you can find it [here](https://github.com/thehogfather/brackets-custom-region-code-folding).**
 
-#Code folding for Brackets
+# Code folding for Brackets
 A code folding extension for [Brackets](https://github.com/adobe/brackets/) based on [CodeMirror's folding addon](http://codemirror.net/demo/folding.html).
 Peforms code folding based on brace ({}, []) matching and multiline comments for javascript, json, css, php and less files. Also has some support for html and xml files based on tag matching.
 
@@ -17,7 +17,7 @@ Peforms code folding based on brace ({}, []) matching and multiline comments for
 ### How to install
 Navigate to **Brackets > File > Install Extension** and paste url https://github.com/thehogfather/brackets-code-folding
 
-####Or manually
+#### Or manually
 1. [Download](https://github.com/thehogfather/brackets-code-folding/archive/master.zip)
 2. Unzip in **user** folder in **Brackets > Help > Show Extensions Folder**
 3. Restart or Reload Brackets
@@ -31,9 +31,9 @@ The following are the default keyboard shortcut keys for the code-folding extens
     Shift-Alt-1 Expand all code regions in current editor
 
 
-##Known Issues
+## Known Issues
 #### Conflicting keyboard shortcuts
-**If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, you can [remap the keys as described here](https://github.com/adobe/brackets/wiki/User-Key-Bindings). **
+**If any of the shortcut keys above conflict with your keyboard or you would prefer to use another shortcut key for any reason, you can [remap the keys as described here](https://github.com/adobe/brackets/wiki/User-Key-Bindings).**
 
 The following are CommandIds for remmaping keys
 
